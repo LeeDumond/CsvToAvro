@@ -81,31 +81,108 @@ namespace CsvToAvro
         public void Append(string line)
         {
             GenericRecord record = Populate(line.Split(','));
-            List<Field> nullFields = GetInvalidNullFields(record);
 
-            if (nullFields.Any())
+            //List<Field> nullFields = GetInvalidNullFields(record);
+
+            //if (nullFields.Any())
+            //{
+            //    throw new InvalidOperationException("The following fields have null values: " + string.Join(", ", nullFields));
+            //}
+
+            dataFileWriter.Append(record);
+        }
+
+        //private List<Field> GetInvalidNullFields(GenericRecord record)
+        //{
+        //    List<Field> avroFields = avroSchema.Fields;
+
+
+        //}
+
+        // fields are real values
+        private GenericRecord Populate(string[] fields)
+        {
+            GenericRecord record = new GenericRecord(avroSchema);
+
+            if (csvHeaderFields != null)
             {
-                throw new InvalidOperationException("The following fields have null values: " + string.Join(", ", nullFields));
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    string csvFieldName = csvHeaderFields[i];
+
+                    if (fieldMap.ContainsKey(csvFieldName))
+                    {
+                        int avroPosition = fieldMap[csvFieldName];
+
+                        Field field = avroSchema[csvFieldName];
+
+                        object obj = GetObject(field, fields[i]);
+
+                        record.Add(csvFieldName, obj);
+
+                        //record.Add(csvFieldName, fields[i]);
+                    }
+                }
             }
             else
             {
-                dataFileWriter.Append(record);
+                List<Field> avroFields = avroSchema.Fields;
+
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    Field field = avroFields[i];
+
+                    // retrieve a field from the Avro SpecificRecord
+                    object obj = GetObject(field, fields[i]);
+
+                    // add the object to the corresponding field
+                    record.Add(field.Name, obj);
+                    
+                    //record.Add(field.Name, fields[i]);
+                }
             }
+
+            return record;
         }
 
-        private List<Field> GetInvalidNullFields(GenericRecord record)
+        private object GetObject(Field field, string value)
         {
-            throw new NotImplementedException();
+            Schema.Type fieldType = field.Schema.Tag;
+
+            
+                switch (fieldType)
+                {
+                    case Schema.Type.Int:
+                        return int.Parse(value);
+                    case Schema.Type.Long:
+                        return long.Parse(value);
+                    case Schema.Type.Float:
+                        return float.Parse(value);
+                    case Schema.Type.Double:
+                        return double.Parse(value);
+                    case Schema.Type.Boolean:
+                        return float.Parse(value);
+                    default:
+                        return value;
+                }
+          
+
+            
         }
 
-        private GenericRecord Populate(string[] fields)
-        {
-            throw new NotImplementedException();
-        }
+        //private Schema.Type GetFieldType(Field field)
+        //{
+        //    return field.Schema.Tag;
+        //}
 
         public void CloseWriter()
         {
             dataFileWriter.Close();
+        }
+
+        public void SetCsvHeader(string[] headerFields)
+        {
+            this.csvHeaderFields = headerFields;
         }
     }
 }
