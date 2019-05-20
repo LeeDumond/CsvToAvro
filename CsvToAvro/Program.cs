@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using NotVisualBasic.FileIO;
 
 namespace CsvToAvro
 {
@@ -13,44 +14,40 @@ namespace CsvToAvro
             string schemaFileName = "gpci.avsc";
             string csvFileName = "GPCI2019.csv";
 
-            string[] headerFields = { "medicare_administrative_contractor", "locality_number", "locality_name", "pw_gpci", "pe_gpci", "mp_gpci" };
+            string csvFilePath = baseFolder + csvFileName;
+            string schemaFilePath = baseFolder + schemaFileName;
 
             string outputFileName = Path.GetFileNameWithoutExtension(csvFileName) + ".avro";
 
-            CsvToAvroGenericWriter writer = new CsvToAvroGenericWriter(baseFolder + schemaFileName, baseFolder + outputFileName, CsvToAvroGenericWriter.MODE_WRITE);
+            string outputFilePath = baseFolder + outputFileName;
 
+            CsvToAvroGenericWriter writer = new CsvToAvroGenericWriter(schemaFilePath, outputFilePath, CsvToAvroGenericWriter.MODE_WRITE);
+
+            //string[] headerFields = { "medicare_administrative_contractor", "locality_number", "locality_name", "pw_gpci", "pe_gpci", "mp_gpci" };
             //writer.SetCsvHeader(headerFields);
 
-            //StreamReader reader = new StreamReader(baseFolder + csvFileName);
-            //string line;
             int counter = 0;
-
-            //while ((line = reader.ReadLine()) != null)
-            //{
-            //    writer.Append(line);
-            //    counter++;
-            //}
-
-            using (var csvReader = new StringReader(File.ReadAllText(baseFolder + csvFileName)))
-            using (var parser = new NotVisualBasic.FileIO.CsvTextFieldParser(csvReader))
+            
+            using (var parser = new CsvTextFieldParser(csvFilePath))
             {
                 //Skip the header line
-                if (!parser.EndOfData)
-                {
-                    parser.ReadFields();
-                }
+                //if (!parser.EndOfData)
+                //{
+                //    parser.ReadFields();
+                //}
 
                 while (!parser.EndOfData)
                 {
-                    string[] csvLine = parser.ReadFields();
-                    writer.Append(csvLine);
+                    string[] csvValues = parser.ReadFields();
+                    writer.Append(csvValues);
                     counter++;
                 }
             }
 
             writer.CloseWriter();
 
-            Console.WriteLine($"There were {counter} lines processed.");
+            Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");
+            Console.WriteLine($"The results were written to: {outputFilePath}");
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Text;
 using Avro;
 using Avro.File;
 using Avro.Generic;
+using NotVisualBasic.FileIO;
 
 namespace CsvToAvro
 {
@@ -30,7 +31,7 @@ namespace CsvToAvro
         //private static Schema NULL_SCHEMA = null;
 
         private DataFileWriter<GenericRecord> dataFileWriter = null;
-        private string outputFileName = null;
+        private string _outputFilePath = null;
         private RecordSchema avroSchema = null;
         private string[] csvHeaderFields = null;
         private Dictionary<string, int> fieldMap = null;
@@ -39,12 +40,12 @@ namespace CsvToAvro
         private string csvDateTimeFormat;
         private string csvDateFormat;
 
-        public CsvToAvroGenericWriter(string schemaFilePath, string outputFileName, int mode)
+        public CsvToAvroGenericWriter(string schemaFilePath, string outputFilePath, int mode)
         {
             string json = File.ReadAllText(schemaFilePath, Encoding.UTF8);
 
             this.avroSchema = (RecordSchema) Schema.Parse(json);
-            this.outputFileName = outputFileName;
+            this._outputFilePath = outputFilePath;
             CsvToAvroGenericWriter.mode = mode;
 
             this.GetDataFileWriter(DEFAULT_COMPRESSION);
@@ -70,17 +71,17 @@ namespace CsvToAvro
             if (mode == MODE_WRITE)
             {
                 // create
-                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(outputFileName, FileMode.Create));
+                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(_outputFilePath, FileMode.Create));
             }
             else
             {
-                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(outputFileName, FileMode.Append));
+                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(_outputFilePath, FileMode.Append));
             }
         }
 
         public void Append(string line)
         {
-            GenericRecord record = Populate(line.Split(','));
+            //GenericRecord record = Populate(line.Split(','));
 
             //List<Field> nullFields = GetInvalidNullFields(record);
 
@@ -89,7 +90,7 @@ namespace CsvToAvro
             //    throw new InvalidOperationException("The following fields have null values: " + string.Join(", ", nullFields));
             //}
 
-            dataFileWriter.Append(record);
+            //dataFileWriter.Append(record);
         }
 
         public void Append(string[] fields)
