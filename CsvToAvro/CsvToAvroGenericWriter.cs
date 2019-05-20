@@ -137,9 +137,11 @@ namespace CsvToAvro
 
                     // add the object to the corresponding field
                     record.Add(field.Name, obj);
-                    
+
                     //record.Add(field.Name, fields[i]);
                 }
+
+
             }
 
             return record;
@@ -177,6 +179,7 @@ namespace CsvToAvro
 
         public void CloseWriter()
         {
+            
             dataFileWriter.Close();
         }
 
