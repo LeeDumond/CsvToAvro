@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Text;
 using Avro;
@@ -153,58 +154,120 @@ namespace CsvToAvro
         {
             Schema.Type fieldType = field.Schema.Tag;
 
+            bool nullAllowed = GetFieldAllowsNull(field);
+
+            
+
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                switch (fieldType)
+                {
+                    case Schema.Type.Int:
+                        try
+                        {
+                            return int.Parse(value);
+                        }
+                        catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+                        {
+                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(int)));
+                        }
+                    case Schema.Type.Long:
+                        try
+                        {
+                            return long.Parse(value);
+                        }
+                        catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+                        {
+                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(long)));
+                        }
+                    case Schema.Type.Float:
+                        try
+                        {
+                            return float.Parse(value);
+                        }
+                        catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+                        {
+                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(float)));
+                        }
+                    case Schema.Type.Double:
+                        try
+                        {
+                            return double.Parse(value);
+                        }
+                        catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+                        {
+                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(double)));
+                        }
+                    case Schema.Type.Boolean:
+                        try
+                        {
+                            return bool.Parse(value);
+                        }
+                        catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+                        {
+                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(bool)));
+                        }
+                    case Schema.Type.String:
+                        return value;
+                    default:
+                        throw new NotSupportedException($"Type {fieldType} is not supported for field '{field.Name}'.");
+                }
+                
+            }
+
+            if (value == null)
+            {
+                if (nullAllowed)
+                {
+                    return null;
+                }
+
+                throw new InvalidOperationException($"Value of 'null' is not allowed for field '{field.Name}'.");
+            }
+
             switch (fieldType)
             {
+
+
                 case Schema.Type.Int:
-                    try
-                    {
-                        return int.Parse(value);
-                    }
-                    catch (Exception ex) when(ex is FormatException || ex is OverflowException)
-                    {
-                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(int)));
-                    }
+                    return default(int);
                 case Schema.Type.Long:
-                    try
-                    {
-                        return long.Parse(value);
-                    }
-                    catch (Exception ex) when (ex is FormatException || ex is OverflowException)
-                    {
-                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(long)));
-                    }
+                    return default(long);
                 case Schema.Type.Float:
-                    try
-                    {
-                        return float.Parse(value);
-                    }
-                    catch (Exception ex) when (ex is FormatException || ex is OverflowException)
-                    {
-                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(float)));
-                    }
+                    return default(float);
                 case Schema.Type.Double:
-                    try
-                    {
-                        return double.Parse(value);
-                    }
-                    catch (Exception ex) when (ex is FormatException || ex is OverflowException)
-                    {
-                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(double)));
-                    }
+                    return default(double);
                 case Schema.Type.Boolean:
-                    try
-                    {
-                        return bool.Parse(value);
-                    }
-                    catch (Exception ex) when (ex is FormatException || ex is OverflowException)
-                    {
-                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(bool)));
-                    }
+                    return default(bool);
                 case Schema.Type.String:
                     return value;
+                case Schema.Type.Union:
+                    
                 default:
-                    throw new NotSupportedException($"Type {fieldType} is not supported for field '{field.Name}'.");
+                    throw new NotSupportedException($"Empty field is not supported for field '{field.Name}'.");
             }
+        }
+
+        
+
+        private bool GetFieldAllowsNull(Field field)
+        {
+            Schema.Type type = field.Schema.Tag;
+
+            if (type == Schema.Type.Union)
+            {
+                IList<Schema> types = ((UnionSchema) field.Schema).Schemas;
+
+                foreach (Schema schema in types)
+                {
+                    if (schema.Tag == Schema.Type.Null)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private string GetParseExceptionMessage(string value, string fieldName, Type type)

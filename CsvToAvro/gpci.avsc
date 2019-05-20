@@ -9,6 +9,6 @@
     { "name": "locality_name", "type": "string" },
     { "name": "pw_gpci", "type": "float" },
     { "name": "pe_gpci", "type": "float" },
-    { "name": "mp_gpci", "type": "float" }
+    { "name": "mp_gpci", "type": ["float", "null"] }
   ]
 }
