@@ -70,11 +70,11 @@ namespace CsvToAvro
             if (mode == MODE_WRITE)
             {
                 // create
-                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(outputFileName, FileMode.Create), codec);
+                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(outputFileName, FileMode.Create));
             }
             else
             {
-                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(outputFileName, FileMode.Append), codec);
+                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(outputFileName, FileMode.Append));
             }
         }
 
