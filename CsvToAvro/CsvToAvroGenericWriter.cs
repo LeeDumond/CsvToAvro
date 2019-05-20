@@ -162,7 +162,7 @@ namespace CsvToAvro
                     }
                     catch (Exception ex) when(ex is FormatException || ex is OverflowException)
                     {
-                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a integer.");
+                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(int)));
                     }
                 case Schema.Type.Long:
                     try
@@ -171,7 +171,7 @@ namespace CsvToAvro
                     }
                     catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                     {
-                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a long integer.");
+                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(long)));
                     }
                 case Schema.Type.Float:
                     try
@@ -180,7 +180,7 @@ namespace CsvToAvro
                     }
                     catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                     {
-                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a float value.");
+                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(float)));
                     }
                 case Schema.Type.Double:
                     try
@@ -189,7 +189,7 @@ namespace CsvToAvro
                     }
                     catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                     {
-                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a double value.");
+                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(double)));
                     }
                 case Schema.Type.Boolean:
                     try
@@ -198,13 +198,18 @@ namespace CsvToAvro
                     }
                     catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                     {
-                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a boolean.");
+                        throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(bool)));
                     }
                 case Schema.Type.String:
                     return value;
                 default:
                     throw new NotSupportedException($"Type {fieldType} is not supported for field '{field.Name}'.");
             }
+        }
+
+        private string GetParseExceptionMessage(string value, string fieldName, Type type)
+        {
+            return $"Value '{value}' of field '{fieldName}' could not be converted to a {type.FullName}.";
         }
 
 
