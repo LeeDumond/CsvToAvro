@@ -23,8 +23,8 @@ namespace CsvToAvro
 
             CsvToAvroGenericWriter writer = new CsvToAvroGenericWriter(schemaFilePath, outputFilePath, CsvToAvroGenericWriter.MODE_WRITE);
 
-            //string[] headerFields = { "medicare_administrative_contractor", "locality_number", "locality_name", "pw_gpci", "pe_gpci", "mp_gpci" };
-            //writer.SetCsvHeader(headerFields);
+            string[] headerFields = { "medicare_administrative_contractor", "locality_number", "locality_name", "pw_gpci", "pe_gpci", "mp_gpci" };
+            writer.SetCsvHeader(headerFields);
 
             int counter = 0;
             

@@ -3,12 +3,12 @@
 	 "type": "record",
 	 "name": "CostIndex",
 	 "version": "1",
-	 "fields": [
-		{"name": "medicare_administrative_contractor", "type": "string"},
-		{"name": "locality_number", "type": "string"},
-		{"name": "locality_name", "type": "string"},
+	 "fields": [		
 		{"name": "pw_gpci", "type": "float"},
 		{"name": "pe_gpci", "type": "float"},
-		{"name": "mp_gpci", "type": "float"}
+		{"name": "mp_gpci", "type": "float"},
+		{"name": "medicare_administrative_contractor", "type": "string"},
+		{"name": "locality_number", "type": "string"},
+		{"name": "locality_name", "type": "string"}
 		]
 }

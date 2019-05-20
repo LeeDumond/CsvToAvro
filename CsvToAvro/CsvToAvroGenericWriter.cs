@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Avro;
 using Avro.File;
 using Avro.Generic;
-using NotVisualBasic.FileIO;
 
 namespace CsvToAvro
 {
@@ -71,11 +68,15 @@ namespace CsvToAvro
             if (mode == MODE_WRITE)
             {
                 // create
-                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(_outputFilePath, FileMode.Create));
+                this.dataFileWriter =
+                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                        new FileStream(_outputFilePath, FileMode.Create));
             }
             else
             {
-                this.dataFileWriter = (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter, new FileStream(_outputFilePath, FileMode.Append));
+                this.dataFileWriter =
+                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                        new FileStream(_outputFilePath, FileMode.Append));
             }
         }
 
@@ -120,15 +121,11 @@ namespace CsvToAvro
 
                     if (fieldMap.ContainsKey(csvFieldName))
                     {
-                        int avroPosition = fieldMap[csvFieldName];
-
                         Field field = avroSchema[csvFieldName];
 
                         object obj = GetObject(field, fields[i]);
 
                         record.Add(csvFieldName, obj);
-
-                        //record.Add(csvFieldName, fields[i]);
                     }
                 }
             }
@@ -145,11 +142,7 @@ namespace CsvToAvro
 
                     // add the object to the corresponding field
                     record.Add(field.Name, obj);
-
-                    //record.Add(field.Name, fields[i]);
                 }
-
-
             }
 
             return record;
@@ -159,35 +152,26 @@ namespace CsvToAvro
         {
             Schema.Type fieldType = field.Schema.Tag;
 
-            
-                switch (fieldType)
-                {
-                    case Schema.Type.Int:
-                        return int.Parse(value);
-                    case Schema.Type.Long:
-                        return long.Parse(value);
-                    case Schema.Type.Float:
-                        return float.Parse(value);
-                    case Schema.Type.Double:
-                        return double.Parse(value);
-                    case Schema.Type.Boolean:
-                        return float.Parse(value);
-                    default:
-                        return value;
-                }
-          
-
-            
+            switch (fieldType)
+            {
+                case Schema.Type.Int:
+                    return int.Parse(value);
+                case Schema.Type.Long:
+                    return long.Parse(value);
+                case Schema.Type.Float:
+                    return float.Parse(value);
+                case Schema.Type.Double:
+                    return double.Parse(value);
+                case Schema.Type.Boolean:
+                    return float.Parse(value);
+                default:
+                    return value;
+            }
         }
 
-        //private Schema.Type GetFieldType(Field field)
-        //{
-        //    return field.Schema.Tag;
-        //}
 
         public void CloseWriter()
         {
-            
             dataFileWriter.Close();
         }
 
