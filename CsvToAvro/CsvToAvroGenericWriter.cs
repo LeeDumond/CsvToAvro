@@ -92,6 +92,13 @@ namespace CsvToAvro
             dataFileWriter.Append(record);
         }
 
+        public void Append(string[] fields)
+        {
+            GenericRecord record = Populate(fields);
+
+            dataFileWriter.Append(record);
+        }
+
         //private List<Field> GetInvalidNullFields(GenericRecord record)
         //{
         //    List<Field> avroFields = avroSchema.Fields;

@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Apache.Avro" Version="1.9.0" />
+    <PackageReference Include="CsvTextFieldParser" Version="1.2.1" />
   </ItemGroup>
 
 </Project>
