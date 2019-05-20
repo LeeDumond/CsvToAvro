@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Avro;
@@ -155,17 +156,54 @@ namespace CsvToAvro
             switch (fieldType)
             {
                 case Schema.Type.Int:
-                    return int.Parse(value);
+                    try
+                    {
+                        return int.Parse(value);
+                    }
+                    catch (Exception ex) when(ex is FormatException || ex is OverflowException)
+                    {
+                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a integer.");
+                    }
                 case Schema.Type.Long:
-                    return long.Parse(value);
+                    try
+                    {
+                        return long.Parse(value);
+                    }
+                    catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+                    {
+                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a long integer.");
+                    }
                 case Schema.Type.Float:
-                    return float.Parse(value);
+                    try
+                    {
+                        return float.Parse(value);
+                    }
+                    catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+                    {
+                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a float value.");
+                    }
                 case Schema.Type.Double:
-                    return double.Parse(value);
+                    try
+                    {
+                        return double.Parse(value);
+                    }
+                    catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+                    {
+                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a double value.");
+                    }
                 case Schema.Type.Boolean:
-                    return float.Parse(value);
-                default:
+                    try
+                    {
+                        return bool.Parse(value);
+                    }
+                    catch (Exception ex) when (ex is FormatException || ex is OverflowException)
+                    {
+                        throw new Exception($"Value {value} of field {field.Name} could not be converted to a boolean.");
+                    }
+                case Schema.Type.String:
                     return value;
+                default:
+                    throw new NotSupportedException($"Type {fieldType} is not supported for field '{field.Name}'.");
             }
         }
 
