@@ -1,5 +1,5 @@
 {
-	"namespace": "com..cccis.aisreview",
+	"namespace": "com.cccis.aisreview",
 	 "type": "record",
 	 "name": "CostIndex",
 	 "version": "1",
