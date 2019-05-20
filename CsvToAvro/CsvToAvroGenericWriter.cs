@@ -152,7 +152,7 @@ namespace CsvToAvro
 
         private object GetObject(Field field, string value)
         {
-            Schema.Type fieldType = field.Schema.Tag;
+            Schema.Type fieldType = GetFieldType(field);
 
             bool nullAllowed = GetFieldAllowsNull(field);
 
@@ -215,46 +215,42 @@ namespace CsvToAvro
                 
             }
 
-            if (value == null)
+            if (nullAllowed)
             {
-                if (nullAllowed)
-                {
-                    return null;
-                }
-
-                throw new InvalidOperationException($"Value of 'null' is not allowed for field '{field.Name}'.");
+                return null;
             }
 
-            switch (fieldType)
-            {
-
-
-                case Schema.Type.Int:
-                    return default(int);
-                case Schema.Type.Long:
-                    return default(long);
-                case Schema.Type.Float:
-                    return default(float);
-                case Schema.Type.Double:
-                    return default(double);
-                case Schema.Type.Boolean:
-                    return default(bool);
-                case Schema.Type.String:
-                    return value;
-                case Schema.Type.Union:
-                    
-                default:
-                    throw new NotSupportedException($"Empty field is not supported for field '{field.Name}'.");
-            }
+            throw new InvalidOperationException($"Value of 'null' is not allowed for field '{field.Name}'.");
         }
 
-        
+        private Schema.Type GetFieldType(Field field)
+        {
+            Schema.Type fieldType = field.Schema.Tag;
+
+            if (fieldType == Schema.Type.Union)
+            {
+                IList<Schema> types = ((UnionSchema)field.Schema).Schemas;
+
+                foreach (Schema schema in types)
+                {
+                    if (schema.Tag != Schema.Type.Null)
+                    {
+                        return schema.Tag;
+                    }
+                }
+
+                return fieldType;
+            }
+
+            return fieldType;
+        }
+
 
         private bool GetFieldAllowsNull(Field field)
         {
-            Schema.Type type = field.Schema.Tag;
+            Schema.Type fieldType = field.Schema.Tag;
 
-            if (type == Schema.Type.Union)
+            if (fieldType == Schema.Type.Union)
             {
                 IList<Schema> types = ((UnionSchema) field.Schema).Schemas;
 
