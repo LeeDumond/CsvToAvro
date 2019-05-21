@@ -18,49 +18,41 @@ namespace CsvToAvro
         public const string SEPARATOR_AT_AT = "@@";
         public const string SEPARATOR_PIPE = "|";
 
-        // we can overwrite or append
-        //public const int MODE_WRITE = 0;
-        //public const int MODE_APPEND = 1;
+        private DataFileWriter<GenericRecord> _dataFileWriter;
+        //private readonly string _outputFilePath;
+        private readonly RecordSchema _avroSchema;
+        private string[] _csvHeaderFields;
+        private string _separator = SEPARATOR_COMMA;
 
-        // default mode
-        //private static int mode = MODE_WRITE;
+        //private string csvDateTimeFormat;
+        //private string csvDateFormat;
 
-        private DataFileWriter<GenericRecord> dataFileWriter = null;
-        private string _outputFilePath = null;
-        private RecordSchema avroSchema = null;
-        private string[] csvHeaderFields = null;
-        private string separator = SEPARATOR_SEMICOLON;
-
-        private string csvDateTimeFormat;
-        private string csvDateFormat;
-
-        public CsvToAvroGenericWriter(string schemaFilePath, string outputFilePath, Mode mode)
+        public CsvToAvroGenericWriter(string schemaFilePath, string outputFilePath, Mode mode = Mode.Create)
         {
             string json = File.ReadAllText(schemaFilePath, Encoding.UTF8);
 
-            this.avroSchema = (RecordSchema) Schema.Parse(json);
-            this._outputFilePath = outputFilePath;
+            _avroSchema = (RecordSchema) Schema.Parse(json);
+            //_outputFilePath = outputFilePath;
 
-            this.GetDataFileWriter(mode);
+            GetDataFileWriter(outputFilePath, mode);
         }
 
-        private void GetDataFileWriter(Mode mode)
+        private void GetDataFileWriter(string outputFilePath, Mode mode)
         {
-            DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(avroSchema);
+            DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
             Codec codec = Codec.CreateCodec(Codec.Type.Deflate);
 
             if (mode == Mode.Create)
             {
-                // create
-                this.dataFileWriter =
+                _dataFileWriter =
                     (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                        new FileStream(_outputFilePath, FileMode.Create), codec);
+                        new FileStream(outputFilePath, FileMode.Create), codec);
             }
             else
             {
-                this.dataFileWriter =
+                _dataFileWriter =
                     (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                        new FileStream(_outputFilePath, FileMode.Append), codec);
+                        new FileStream(outputFilePath, FileMode.Append), codec);
             }
         }
 
@@ -82,7 +74,7 @@ namespace CsvToAvro
         {
             GenericRecord record = Populate(fields);
 
-            dataFileWriter.Append(record);
+            _dataFileWriter.Append(record);
         }
 
         //private List<Field> GetInvalidNullFields(GenericRecord record)
@@ -95,15 +87,15 @@ namespace CsvToAvro
         // fields are real values
         private GenericRecord Populate(string[] fields)
         {
-            GenericRecord record = new GenericRecord(avroSchema);
-            List<Field> avroFields = avroSchema.Fields;
+            GenericRecord record = new GenericRecord(_avroSchema);
+            List<Field> avroFields = _avroSchema.Fields;
 
-            if (csvHeaderFields != null)
+            if (_csvHeaderFields != null)
             {
                 for (int i = 0; i < fields.Length; i++)
                 {
-                    string csvFieldName = csvHeaderFields[i];
-                    Field field = avroSchema[csvFieldName];
+                    string csvFieldName = _csvHeaderFields[i];
+                    Field field = _avroSchema[csvFieldName];
 
                     if (field != null)
                     {
@@ -251,12 +243,12 @@ namespace CsvToAvro
 
         public void CloseWriter()
         {
-            dataFileWriter.Close();
+            _dataFileWriter.Close();
         }
 
         public void SetCsvHeader(string[] headerFields)
         {
-            this.csvHeaderFields = headerFields;
+            this._csvHeaderFields = headerFields;
         }
 
         public enum Mode

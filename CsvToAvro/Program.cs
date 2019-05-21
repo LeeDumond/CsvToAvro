@@ -21,7 +21,7 @@ namespace CsvToAvro
 
             string outputFilePath = baseFolder + outputFileName;
 
-            CsvToAvroGenericWriter writer = new CsvToAvroGenericWriter(schemaFilePath, outputFilePath, CsvToAvroGenericWriter.Mode.Create);
+            CsvToAvroGenericWriter writer = new CsvToAvroGenericWriter(schemaFilePath, outputFilePath);
             string[] headerFields = { "medicare_administrative_contractor", "locality_number", "locality_name", "pw_gpci", "pe_gpci", "mp_gpci" };
             writer.SetCsvHeader(headerFields);
 
