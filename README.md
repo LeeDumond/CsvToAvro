@@ -48,4 +48,13 @@ Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");
 ```
 The `Append()` methods accept either an array of string values, or a raw separated string. 
 
-Note that the `Append(string line, char separator = DEFAULT_SEPARATOR)` overload makes no attempt to perform any complex parsing; it simply splits the string based on the supplied separator (the default is comma). If your line data has quoted values, newlines, escaped quotes, etc. you should use the `Append(string[] fields)` overload.
+Note that the `Append(string line, char separator = DEFAULT_SEPARATOR)` overload makes no attempt to perform any complex parsing; it simply splits the string based on the supplied separator (the default is comma). If your line data has quoted values, newlines, escaped quotes, etc. you should use the `Append(string[] fields)` overload instead.
+
+### Dealing with Field Ordering
+
+Normally, the writer expects the values in the CSV file to appear in the same order they are defined in the schema. Occasionally however, this may not be the case. In those situations, you can tell the writer in what order the fields appear in your data:
+
+```C#
+string[] headerFields = { "name", "address", "city", "state", "zip", "email" };
+writer.SetCsvHeader(headerFields);
+``` 
