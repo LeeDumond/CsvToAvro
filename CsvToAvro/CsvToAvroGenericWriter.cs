@@ -19,7 +19,6 @@ namespace CsvToAvro
         public const string SEPARATOR_PIPE = "|";
 
         private DataFileWriter<GenericRecord> _dataFileWriter;
-        //private readonly string _outputFilePath;
         private readonly RecordSchema _avroSchema;
         private string[] _csvHeaderFields;
         private string _separator = SEPARATOR_COMMA;
@@ -30,9 +29,7 @@ namespace CsvToAvro
         public CsvToAvroGenericWriter(string schemaFilePath, string outputFilePath, Mode mode = Mode.Create)
         {
             string json = File.ReadAllText(schemaFilePath, Encoding.UTF8);
-
             _avroSchema = (RecordSchema) Schema.Parse(json);
-            //_outputFilePath = outputFilePath;
 
             GetDataFileWriter(outputFilePath, mode);
         }
