@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Avro;
 using Avro.File;
 using Avro.Generic;
+using NotVisualBasic.FileIO;
 
 namespace CsvToAvro
 {
@@ -20,30 +20,13 @@ namespace CsvToAvro
 
         private const char DEFAULT_SEPARATOR = ',';
         private static RecordSchema _avroSchema;
-        private string[] _csvHeaderFields;
 
         private static DataFileWriter<GenericRecord> _dataFileWriter;
-
-        public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath, Mode mode = Mode.Create)
-        {
-            string jsonSchema = File.ReadAllText(schemaFilePath, Encoding.UTF8);
-
-            return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
-        }
-
-        public static CsvToAvroGenericWriter CreateFromJson(string jsonSchema, string outputFilePath, Mode mode = Mode.Create)
-        {
-            return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
-        }
-
-        public static CsvToAvroGenericWriter CreateFromSchema(RecordSchema schema, string outputFilePath, Mode mode = Mode.Create)
-        {
-            return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
-        }
+        private string[] _csvHeaderFields;
 
         private CsvToAvroGenericWriter(string jsonSchema, string outputFilePath, Mode mode)
         {
-            _avroSchema = (RecordSchema)Schema.Parse(jsonSchema);
+            _avroSchema = (RecordSchema) Schema.Parse(jsonSchema);
             GetDataFileWriter(outputFilePath, mode);
         }
 
@@ -51,6 +34,26 @@ namespace CsvToAvro
         {
             _avroSchema = schema;
             GetDataFileWriter(outputFilePath, mode);
+        }
+
+        public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
+            Mode mode = Mode.Create)
+        {
+            string jsonSchema = File.ReadAllText(schemaFilePath, Encoding.UTF8);
+
+            return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
+        }
+
+        public static CsvToAvroGenericWriter CreateFromJson(string jsonSchema, string outputFilePath,
+            Mode mode = Mode.Create)
+        {
+            return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
+        }
+
+        public static CsvToAvroGenericWriter CreateFromSchema(RecordSchema schema, string outputFilePath,
+            Mode mode = Mode.Create)
+        {
+            return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
         }
 
         private static void GetDataFileWriter(string outputFilePath, Mode mode)
@@ -70,6 +73,36 @@ namespace CsvToAvro
                     (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
                         new FileStream(outputFilePath, FileMode.Append), codec);
             }
+        }
+
+        public int ConvertFromCsv(string csvFilePath, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
+        {
+            int counter = 0;
+
+            using (var parser = new CsvTextFieldParser(csvFilePath))
+            {
+                parser.SetDelimiter(separator);
+                parser.TrimWhiteSpace = false;
+
+                for (int i = 0; i < headerLinesToSkip; i++)
+                {
+                    if (!parser.EndOfData)
+                    {
+                        parser.ReadFields();
+                    }
+                }
+
+                while (!parser.EndOfData)
+                {
+                    string[] csvValues = parser.ReadFields();
+                    Append(csvValues);
+                    counter++;
+                }
+            }
+
+            CloseWriter();
+
+            return counter;
         }
 
         public void Append(string[] fields)
