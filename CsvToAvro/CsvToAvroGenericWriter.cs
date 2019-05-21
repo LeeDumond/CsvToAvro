@@ -12,12 +12,6 @@ namespace CsvToAvro
 {
     public class CsvToAvroGenericWriter
     {
-        public const string SEPARATOR_TAB = "\t";
-        public const string SEPARATOR_SEMICOLON = ";";
-        public const string SEPARATOR_COMMA = ",";
-        public const string SEPARATOR_AT = "@";
-        public const string SEPARATOR_AT_AT = "@@";
-        public const string SEPARATOR_PIPE = "|";
         private const string DEFAULT_SEPARATOR = ",";
 
         private DataFileWriter<GenericRecord> _dataFileWriter;
@@ -232,7 +226,7 @@ namespace CsvToAvro
             return false;
         }
 
-        private IEnumerable<Field> GetInvalidNullFields(GenericRecord record)
+        private List<Field> GetInvalidNullFields(GenericRecord record)
         {
             List<Field> avroFields = _avroSchema.Fields;
 
