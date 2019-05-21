@@ -125,11 +125,6 @@ namespace CsvToAvro
             Append(line.Split(separator));
         }
 
-        //public void Append(string line)
-        //{
-        //    Append(line.Split(DEFAULT_SEPARATOR));
-        //}
-
         private GenericRecord Populate(string[] fields)
         {
             var record = new GenericRecord(_avroSchema);
@@ -315,11 +310,6 @@ namespace CsvToAvro
         {
             _csvHeaderFields = header.Split(separator);
         }
-
-        //public void SetCsvHeader(string header)
-        //{
-        //    _csvHeaderFields = header.Split(DEFAULT_SEPARATOR);
-        //}
 
         public void CloseWriter()
         {
