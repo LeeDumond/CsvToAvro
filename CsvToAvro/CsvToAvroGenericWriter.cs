@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Avro;
 using Avro.File;
@@ -17,11 +18,11 @@ namespace CsvToAvro
         public const string SEPARATOR_AT = "@";
         public const string SEPARATOR_AT_AT = "@@";
         public const string SEPARATOR_PIPE = "|";
+        private const string DEFAULT_SEPARATOR = ",";
 
         private DataFileWriter<GenericRecord> _dataFileWriter;
         private readonly RecordSchema _avroSchema;
         private string[] _csvHeaderFields;
-        private string _separator = SEPARATOR_COMMA;
 
         //private string csvDateTimeFormat;
         //private string csvDateFormat;
@@ -53,35 +54,30 @@ namespace CsvToAvro
             }
         }
 
-        public void Append(string line)
-        {
-            //GenericRecord record = Populate(line.Split(','));
-
-            //List<Field> nullFields = GetInvalidNullFields(record);
-
-            //if (nullFields.Any())
-            //{
-            //    throw new InvalidOperationException("The following fields have null values: " + string.Join(", ", nullFields));
-            //}
-
-            //dataFileWriter.Append(record);
-        }
-
         public void Append(string[] fields)
         {
             GenericRecord record = Populate(fields);
 
+            IEnumerable<Field> nullFields = GetInvalidNullFields(record);
+
+            if (nullFields.Any())
+            {
+                throw new Exception($"There are fields with null, values but the schema does not allow for null: {string.Join(", ", nullFields)}.");
+            }
+
             _dataFileWriter.Append(record);
         }
 
-        //private List<Field> GetInvalidNullFields(GenericRecord record)
-        //{
-        //    List<Field> avroFields = avroSchema.Fields;
+        public void Append(string line, string separator)
+        {
+            Append(line.Split(separator));
+        }
 
+        public void Append(string line)
+        {
+            Append(line.Split(DEFAULT_SEPARATOR));
+        }
 
-        //}
-
-        // fields are real values
         private GenericRecord Populate(string[] fields)
         {
             GenericRecord record = new GenericRecord(_avroSchema);
@@ -108,10 +104,8 @@ namespace CsvToAvro
                 {
                     Field field = avroFields[i];
 
-                    // retrieve a field from the Avro SpecificRecord
                     object obj = GetObject(field, fields[i]);
 
-                    // add the object to the corresponding field
                     record.Add(field.Name, obj);
                 }
             }
@@ -190,6 +184,11 @@ namespace CsvToAvro
             throw new InvalidOperationException($"Value of 'null' is not allowed for field '{field.Name}'.");
         }
 
+        private string GetParseExceptionMessage(string value, string fieldName, Type type)
+        {
+            return $"Value '{value}' of field '{fieldName}' could not be converted to a {type.FullName}.";
+        }
+
         private Schema.Type GetFieldType(Field field)
         {
             Schema.Type fieldType = field.Schema.Tag;
@@ -233,19 +232,44 @@ namespace CsvToAvro
             return false;
         }
 
-        private string GetParseExceptionMessage(string value, string fieldName, Type type)
+        private IEnumerable<Field> GetInvalidNullFields(GenericRecord record)
         {
-            return $"Value '{value}' of field '{fieldName}' could not be converted to a {type.FullName}.";
+            List<Field> avroFields = _avroSchema.Fields;
+
+            List<Field> nullFields = new List<Field>();
+
+            foreach (Field field in avroFields)
+            {
+                if (record.TryGetValue(field.Name, out object value))
+                {
+                    if (value == null && !GetFieldAllowsNull(field))
+                    {
+                        nullFields.Add(field);
+                    }
+                }
+            }
+
+            return nullFields;
+        }
+
+        public void SetCsvHeader(string[] headerFields)
+        {
+            _csvHeaderFields = headerFields;
+        }
+
+        public void SetCsvHeader(string header, string separator)
+        {
+            _csvHeaderFields = header.Split(separator);
+        }
+
+        public void SetCsvHeader(string header)
+        {
+            _csvHeaderFields = header.Split(DEFAULT_SEPARATOR);
         }
 
         public void CloseWriter()
         {
             _dataFileWriter.Close();
-        }
-
-        public void SetCsvHeader(string[] headerFields)
-        {
-            this._csvHeaderFields = headerFields;
         }
 
         public enum Mode
