@@ -40,7 +40,6 @@ namespace CsvToAvro
 
             this.avroSchema = (RecordSchema) Schema.Parse(json);
             this._outputFilePath = outputFilePath;
-            //CsvToAvroGenericWriter.mode = mode;
 
             this.GetDataFileWriter(mode);
         }
