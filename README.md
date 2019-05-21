@@ -10,26 +10,27 @@ Use the static `CsvToAvroGenericWriter.CreateFrom...` methods to get a writer ob
 
 The factory method to use will depend on how your schema is represented:
 
-- `CsvToAvroGenericWriter.CreateFromPath` if you have a file path to a text file containing the schema in JSON format.
-- `CsvToAvroGenericWriter.CreateFromJson` if you only have the raw text containing the schema in JSON format.
-- `CsvToAvroGenericWriter.CreateFromSchema` if you already have pre-defined `RecordSchema` object containing the schema.
+- `CsvToAvroGenericWriter.CreateFromPath()` if you have a file path to a text file containing the schema in JSON format.
+- `CsvToAvroGenericWriter.CreateFromJson()` if you only have the raw text containing the schema in JSON format.
+- `CsvToAvroGenericWriter.CreateFromSchema()` if you already have a pre-defined `RecordSchema` object containing the schema.
 
 ### Basic Usage
 
-Once you have a writer, you can just tell it where your CSV file lives let it do all of the work:
+Once you have a writer, you can just tell it where your CSV file lives, and let it do all of the work:
 
 ```C#
 int counter = writer.ConvertFromCsv(csvFilePath);
 Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");
 ```
 
-You may also indicate if there are header lines that should be skipped (*default is 0*), and a custom separator (*default is comma*).
+You may also indicate how many header lines should be skipped in the CSV file (*default is 0*), and a custom separator (*default is comma*).
 
 ### Advanced Usage
 
-If you need more control, you may parse your CSV yourself and use any of the `Append()` overloads to add the values from each line to the writer manually (don't forget to close the writer after you're done!):
+If you need more control, you may parse the CSV yourself and use any of the `Append()` overloads to add the values from each line to the writer manually (don't forget to close the writer after you're done!):
 
 ```C#
+int counter = 0;
 using (var reader = new StreamReader(csvFilePath))
 {
     string line;
@@ -38,6 +39,7 @@ using (var reader = new StreamReader(csvFilePath))
         if (!string.IsNullOrEmpty(line))
         {
             writer.Append(line);
+            counter++;
         }
     }
 }
@@ -52,7 +54,7 @@ Note that the `Append(string line, char separator = DEFAULT_SEPARATOR)` overload
 
 ### Dealing with Field Ordering
 
-Normally, the writer expects the values in the CSV file to appear in the same order they are defined in the schema. Occasionally however, this may not be the case. In those situations, you can tell the writer in what order the fields appear in your data:
+Normally, the writer expects the values in the CSV file to appear in the same order they are defined in the schema. However, this may not always be the case. In those situations, you can tell the writer in what order the fields actually appear in your data:
 
 ```C#
 string[] headerFields = { "name", "address", "city", "state", "zip", "email" };
