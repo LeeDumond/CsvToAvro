@@ -9,7 +9,7 @@ using Avro.Generic;
 
 namespace CsvToAvro
 {
-    internal class CsvToAvroGenericWriter
+    public class CsvToAvroGenericWriter
     {
         public const string SEPARATOR_TAB = "\t";
         public const string SEPARATOR_SEMICOLON = ";";
@@ -26,7 +26,7 @@ namespace CsvToAvro
         private static int mode = MODE_WRITE;
 
         // default compression factor
-        public const int DEFAULT_COMPRESSION = 6;
+        //public const int DEFAULT_COMPRESSION = 6;
         //private static Schema NULL_SCHEMA = null;
 
         private DataFileWriter<GenericRecord> dataFileWriter = null;
@@ -47,7 +47,7 @@ namespace CsvToAvro
             this._outputFilePath = outputFilePath;
             CsvToAvroGenericWriter.mode = mode;
 
-            this.GetDataFileWriter(DEFAULT_COMPRESSION);
+            this.GetDataFileWriter();
             //this.PopulateFieldMap();
         }
 
@@ -62,7 +62,7 @@ namespace CsvToAvro
         //    }
         //}
 
-        private void GetDataFileWriter(int compressionFactor)
+        private void GetDataFileWriter()
         {
             DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(avroSchema);
             Codec codec = Codec.CreateCodec(Codec.Type.Deflate);
