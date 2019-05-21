@@ -17,7 +17,7 @@ namespace CsvToAvro
             Append
         }
 
-        private const string DEFAULT_SEPARATOR = ",";
+        private const char DEFAULT_SEPARATOR = ',';
         private readonly RecordSchema _avroSchema;
         private string[] _csvHeaderFields;
 
@@ -28,8 +28,8 @@ namespace CsvToAvro
 
         public CsvToAvroGenericWriter(string schemaFilePath, string outputFilePath, Mode mode = Mode.Create)
         {
-            string json = File.ReadAllText(schemaFilePath, Encoding.UTF8);
-            _avroSchema = (RecordSchema) Schema.Parse(json);
+            string jsonSchema = File.ReadAllText(schemaFilePath, Encoding.UTF8);
+            _avroSchema = (RecordSchema)Schema.Parse(jsonSchema);
 
             GetDataFileWriter(outputFilePath, mode);
         }
@@ -68,15 +68,15 @@ namespace CsvToAvro
             _dataFileWriter.Append(record);
         }
 
-        public void Append(string line, string separator)
+        public void Append(string line, char separator = DEFAULT_SEPARATOR)
         {
             Append(line.Split(separator));
         }
 
-        public void Append(string line)
-        {
-            Append(line.Split(DEFAULT_SEPARATOR));
-        }
+        //public void Append(string line)
+        //{
+        //    Append(line.Split(DEFAULT_SEPARATOR));
+        //}
 
         private GenericRecord Populate(string[] fields)
         {
@@ -259,15 +259,15 @@ namespace CsvToAvro
             _csvHeaderFields = headerFields;
         }
 
-        public void SetCsvHeader(string header, string separator)
+        public void SetCsvHeader(string header, char separator = DEFAULT_SEPARATOR)
         {
             _csvHeaderFields = header.Split(separator);
         }
 
-        public void SetCsvHeader(string header)
-        {
-            _csvHeaderFields = header.Split(DEFAULT_SEPARATOR);
-        }
+        //public void SetCsvHeader(string header)
+        //{
+        //    _csvHeaderFields = header.Split(DEFAULT_SEPARATOR);
+        //}
 
         public void CloseWriter()
         {

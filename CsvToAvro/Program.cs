@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using NotVisualBasic.FileIO;
 
 namespace CsvToAvro
