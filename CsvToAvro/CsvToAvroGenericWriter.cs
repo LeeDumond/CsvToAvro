@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,11 +11,17 @@ namespace CsvToAvro
 {
     public class CsvToAvroGenericWriter
     {
-        private const string DEFAULT_SEPARATOR = ",";
+        public enum Mode
+        {
+            Create,
+            Append
+        }
 
-        private DataFileWriter<GenericRecord> _dataFileWriter;
+        private const string DEFAULT_SEPARATOR = ",";
         private readonly RecordSchema _avroSchema;
         private string[] _csvHeaderFields;
+
+        private DataFileWriter<GenericRecord> _dataFileWriter;
 
         //private string csvDateTimeFormat;
         //private string csvDateFormat;
@@ -52,11 +57,12 @@ namespace CsvToAvro
         {
             GenericRecord record = Populate(fields);
 
-            IEnumerable<Field> nullFields = GetInvalidNullFields(record);
+            IEnumerable<Field> invalidNullFields = GetInvalidNullFields(record);
 
-            if (nullFields.Any())
+            if (invalidNullFields.Any())
             {
-                throw new Exception($"There are fields with null, values but the schema does not allow for null: {string.Join(", ", nullFields)}.");
+                throw new Exception(
+                    $"There are fields with null, values but the schema does not allow for null: {string.Join(", ", invalidNullFields)}.");
             }
 
             _dataFileWriter.Append(record);
@@ -74,12 +80,12 @@ namespace CsvToAvro
 
         private GenericRecord Populate(string[] fields)
         {
-            GenericRecord record = new GenericRecord(_avroSchema);
+            var record = new GenericRecord(_avroSchema);
             List<Field> avroFields = _avroSchema.Fields;
 
             if (_csvHeaderFields != null)
             {
-                for (int i = 0; i < fields.Length; i++)
+                for (var i = 0; i < fields.Length; i++)
                 {
                     string csvFieldName = _csvHeaderFields[i];
                     Field field = _avroSchema[csvFieldName];
@@ -94,7 +100,7 @@ namespace CsvToAvro
             }
             else
             {
-                for (int i = 0; i < fields.Length; i++)
+                for (var i = 0; i < fields.Length; i++)
                 {
                     Field field = avroFields[i];
 
@@ -124,8 +130,10 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(int)));
+                            throw new InvalidOperationException(
+                                GetParseExceptionMessage(value, field.Name, typeof(int)));
                         }
+
                     case Schema.Type.Long:
                         try
                         {
@@ -133,8 +141,10 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(long)));
+                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name,
+                                typeof(long)));
                         }
+
                     case Schema.Type.Float:
                         try
                         {
@@ -142,8 +152,10 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(float)));
+                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name,
+                                typeof(float)));
                         }
+
                     case Schema.Type.Double:
                         try
                         {
@@ -151,8 +163,10 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(double)));
+                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name,
+                                typeof(double)));
                         }
+
                     case Schema.Type.Boolean:
                         try
                         {
@@ -160,14 +174,15 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name, typeof(bool)));
+                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name,
+                                typeof(bool)));
                         }
+
                     case Schema.Type.String:
                         return value;
                     default:
                         throw new NotSupportedException($"Type {fieldType} is not supported for field '{field.Name}'.");
                 }
-                
             }
 
             if (nullAllowed)
@@ -189,7 +204,7 @@ namespace CsvToAvro
 
             if (fieldType == Schema.Type.Union)
             {
-                IList<Schema> types = ((UnionSchema)field.Schema).Schemas;
+                IList<Schema> types = ((UnionSchema) field.Schema).Schemas;
 
                 foreach (Schema schema in types)
                 {
@@ -205,22 +220,15 @@ namespace CsvToAvro
             return fieldType;
         }
 
-
         private bool GetFieldAllowsNull(Field field)
         {
             Schema.Type fieldType = field.Schema.Tag;
 
             if (fieldType == Schema.Type.Union)
             {
-                IList<Schema> types = ((UnionSchema) field.Schema).Schemas;
+                IList<Schema> schemas = ((UnionSchema) field.Schema).Schemas;
 
-                foreach (Schema schema in types)
-                {
-                    if (schema.Tag == Schema.Type.Null)
-                    {
-                        return true;
-                    }
-                }
+                return schemas.Any(schema => schema.Tag == Schema.Type.Null);
             }
 
             return false;
@@ -230,7 +238,7 @@ namespace CsvToAvro
         {
             List<Field> avroFields = _avroSchema.Fields;
 
-            List<Field> nullFields = new List<Field>();
+            var nullFields = new List<Field>();
 
             foreach (Field field in avroFields)
             {
@@ -264,12 +272,6 @@ namespace CsvToAvro
         public void CloseWriter()
         {
             _dataFileWriter.Close();
-        }
-
-        public enum Mode
-        {
-            Create,
-            Append
         }
     }
 }
