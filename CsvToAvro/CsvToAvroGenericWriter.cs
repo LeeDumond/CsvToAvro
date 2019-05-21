@@ -72,13 +72,13 @@ namespace CsvToAvro
                 // create
                 this.dataFileWriter =
                     (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                        new FileStream(_outputFilePath, FileMode.Create));
+                        new FileStream(_outputFilePath, FileMode.Create), codec);
             }
             else
             {
                 this.dataFileWriter =
                     (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                        new FileStream(_outputFilePath, FileMode.Append));
+                        new FileStream(_outputFilePath, FileMode.Append), codec);
             }
         }
 
