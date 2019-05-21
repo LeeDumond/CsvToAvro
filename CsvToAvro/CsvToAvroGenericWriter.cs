@@ -33,7 +33,7 @@ namespace CsvToAvro
         private string _outputFilePath = null;
         private RecordSchema avroSchema = null;
         private string[] csvHeaderFields = null;
-        private Dictionary<string, int> fieldMap = null;
+        //private Dictionary<string, int> fieldMap = null;
         private string separator = SEPARATOR_SEMICOLON;
 
         private string csvDateTimeFormat;
@@ -48,19 +48,19 @@ namespace CsvToAvro
             CsvToAvroGenericWriter.mode = mode;
 
             this.GetDataFileWriter(DEFAULT_COMPRESSION);
-            this.PopulateFieldMap();
+            //this.PopulateFieldMap();
         }
 
-        private void PopulateFieldMap()
-        {
-            fieldMap = new Dictionary<string, int>();
-            List<Field> avroFields = avroSchema.Fields;
+        //private void PopulateFieldMap()
+        //{
+        //    fieldMap = new Dictionary<string, int>();
+        //    List<Field> avroFields = avroSchema.Fields;
 
-            foreach (Field avroField in avroFields)
-            {
-                fieldMap.Add(avroField.Name, avroField.Pos);
-            }
-        }
+        //    foreach (Field avroField in avroFields)
+        //    {
+        //        fieldMap.Add(avroField.Name, avroField.Pos);
+        //    }
+        //}
 
         private void GetDataFileWriter(int compressionFactor)
         {
@@ -114,16 +114,18 @@ namespace CsvToAvro
         private GenericRecord Populate(string[] fields)
         {
             GenericRecord record = new GenericRecord(avroSchema);
+            List<Field> avroFields = avroSchema.Fields;
 
             if (csvHeaderFields != null)
             {
                 for (int i = 0; i < fields.Length; i++)
                 {
                     string csvFieldName = csvHeaderFields[i];
+                    Field field = avroSchema[csvFieldName];
 
-                    if (fieldMap.ContainsKey(csvFieldName))
+                    if (field != null)
                     {
-                        Field field = avroSchema[csvFieldName];
+                        //Field field = avroSchema[csvFieldName];
 
                         object obj = GetObject(field, fields[i]);
 
@@ -133,7 +135,7 @@ namespace CsvToAvro
             }
             else
             {
-                List<Field> avroFields = avroSchema.Fields;
+                //List<Field> avroFields = avroSchema.Fields;
 
                 for (int i = 0; i < fields.Length; i++)
                 {
