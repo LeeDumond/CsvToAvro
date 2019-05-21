@@ -41,6 +41,18 @@ namespace CsvToAvro
             //string[] headerFields = { "medicare_administrative_contractor", "locality_number", "locality_name", "pw_gpci", "pe_gpci", "mp_gpci" };
             //writer.SetCsvHeader(headerFields);
 
+            //using (var reader = new StreamReader(csvFilePath))
+            //{
+            //    string line;
+            //    while ((line = reader.ReadLine()) != null)
+            //    {
+            //        if (!string.IsNullOrEmpty(line))
+            //        {
+            //            writer.Append(line);
+            //        }
+            //    }
+            //}
+
             //writer.CloseWriter();
 
             Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");

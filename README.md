@@ -27,8 +27,25 @@ You may also indicate if there are header lines that should be skipped (*default
 
 ### Advanced Usage
 
-If you need more control, you may parse your CSV yourself and use any of the `Append()` overloads to add the values from each line to the writer manually:
+If you need more control, you may parse your CSV yourself and use any of the `Append()` overloads to add the values from each line to the writer manually (don't forget to close the writer after you're done!):
 
 ```C#
+using (var reader = new StreamReader(csvFilePath))
+{
+    string line;
+    while ((line = reader.ReadLine()) != null)
+    {
+        if (!string.IsNullOrEmpty(line))
+        {
+            writer.Append(line);
+        }
+    }
+}
 
+writer.CloseWriter();
+
+Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");
 ```
+The `Append()` methods accept either an array of string values, or a raw separated string. 
+
+Note that the `Append(string line, char separator = DEFAULT_SEPARATOR)` overload makes no attempt to perform any complex parsing; it simply splits the string based on the supplied separator (the default is comma). If your line data has quoted values, newlines, escaped quotes, etc. you should use the `Append(string[] fields)` overload.
