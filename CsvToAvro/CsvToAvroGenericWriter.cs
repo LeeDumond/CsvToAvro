@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Avro;
 using Avro.File;
@@ -18,23 +19,41 @@ namespace CsvToAvro
         }
 
         private const char DEFAULT_SEPARATOR = ',';
-        private readonly RecordSchema _avroSchema;
+        private static RecordSchema _avroSchema;
         private string[] _csvHeaderFields;
 
-        private DataFileWriter<GenericRecord> _dataFileWriter;
+        private static DataFileWriter<GenericRecord> _dataFileWriter;
 
-        //private string csvDateTimeFormat;
-        //private string csvDateFormat;
-
-        public CsvToAvroGenericWriter(string schemaFilePath, string outputFilePath, Mode mode = Mode.Create)
+        public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath, Mode mode = Mode.Create)
         {
             string jsonSchema = File.ReadAllText(schemaFilePath, Encoding.UTF8);
-            _avroSchema = (RecordSchema)Schema.Parse(jsonSchema);
 
+            return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
+        }
+
+        public static CsvToAvroGenericWriter CreateFromJson(string jsonSchema, string outputFilePath, Mode mode = Mode.Create)
+        {
+            return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
+        }
+
+        public static CsvToAvroGenericWriter CreateFromSchema(RecordSchema schema, string outputFilePath, Mode mode = Mode.Create)
+        {
+            return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
+        }
+
+        private CsvToAvroGenericWriter(string jsonSchema, string outputFilePath, Mode mode)
+        {
+            _avroSchema = (RecordSchema)Schema.Parse(jsonSchema);
             GetDataFileWriter(outputFilePath, mode);
         }
 
-        private void GetDataFileWriter(string outputFilePath, Mode mode)
+        private CsvToAvroGenericWriter(RecordSchema schema, string outputFilePath, Mode mode)
+        {
+            _avroSchema = schema;
+            GetDataFileWriter(outputFilePath, mode);
+        }
+
+        private static void GetDataFileWriter(string outputFilePath, Mode mode)
         {
             DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
             Codec codec = Codec.CreateCodec(Codec.Type.Deflate);

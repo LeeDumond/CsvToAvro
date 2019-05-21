@@ -21,7 +21,23 @@ namespace CsvToAvro
 
             string outputFilePath = baseFolder + outputFileName;
 
-            CsvToAvroGenericWriter writer = new CsvToAvroGenericWriter(schemaFilePath, outputFilePath);
+            CsvToAvroGenericWriter writer = CsvToAvroGenericWriter.CreateFromPath(schemaFilePath, outputFilePath);
+
+//            string jsonSchema = @"{
+//  ""namespace"": ""com.cccis.aisreview"",
+//  ""type"": ""record"",
+//  ""name"": ""CostIndex"",
+//  ""version"": ""1"",
+//  ""fields"": [
+//    { ""name"": ""medicare_administrative_contractor"", ""type"": ""string"" },
+//    { ""name"": ""locality_number"", ""type"": ""string"" },
+//    { ""name"": ""locality_name"", ""type"": ""string"" },
+//    { ""name"": ""pw_gpci"", ""type"": ""float"" },
+//    { ""name"": ""pe_gpci"", ""type"": ""float"" },
+//    { ""name"": ""mp_gpci"", ""type"": [""float"", ""null""] }
+//  ]
+//}";
+//            CsvToAvroGenericWriter writer = CsvToAvroGenericWriter.CreateFromJson(jsonSchema, outputFilePath);
 
             //string[] headerFields = { "medicare_administrative_contractor", "locality_number", "locality_name", "pw_gpci", "pe_gpci", "mp_gpci" };
             //writer.SetCsvHeader(headerFields);
