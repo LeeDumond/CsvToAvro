@@ -23,7 +23,7 @@ namespace CsvToAvro
             int counter = writer.ConvertFromCsv(csvFilePath);
 
             //            string jsonSchema = @"{
-            //  ""namespace"": ""com.cccis.aisreview"",
+            //  ""namespace"": ""com.leedumond"",
             //  ""type"": ""record"",
             //  ""name"": ""CostIndex"",
             //  ""version"": ""1"",
