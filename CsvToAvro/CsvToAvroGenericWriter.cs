@@ -27,13 +27,32 @@ namespace CsvToAvro
         private CsvToAvroGenericWriter(string jsonSchema, string outputFilePath, Mode mode)
         {
             _avroSchema = (RecordSchema) Schema.Parse(jsonSchema);
-            GetDataFileWriter(outputFilePath, mode);
+            BuildDataFileWriter(outputFilePath, mode);
         }
 
         private CsvToAvroGenericWriter(RecordSchema schema, string outputFilePath, Mode mode)
         {
             _avroSchema = schema;
-            GetDataFileWriter(outputFilePath, mode);
+            BuildDataFileWriter(outputFilePath, mode);
+        }
+
+        private static void BuildDataFileWriter(string outputFilePath, Mode mode)
+        {
+            DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
+            Codec codec = Codec.CreateCodec(Codec.Type.Deflate);
+
+            if (mode == Mode.Create)
+            {
+                _dataFileWriter =
+                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                        new FileStream(outputFilePath, FileMode.Create), codec);
+            }
+            else
+            {
+                _dataFileWriter =
+                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                        new FileStream(outputFilePath, FileMode.Append), codec);
+            }
         }
 
         public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
@@ -56,23 +75,14 @@ namespace CsvToAvro
             return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
         }
 
-        private static void GetDataFileWriter(string outputFilePath, Mode mode)
+        public void SetCsvHeader(string[] headerFields)
         {
-            DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
-            Codec codec = Codec.CreateCodec(Codec.Type.Deflate);
+            _csvHeaderFields = headerFields;
+        }
 
-            if (mode == Mode.Create)
-            {
-                _dataFileWriter =
-                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                        new FileStream(outputFilePath, FileMode.Create), codec);
-            }
-            else
-            {
-                _dataFileWriter =
-                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                        new FileStream(outputFilePath, FileMode.Append), codec);
-            }
+        public void SetCsvHeader(string header, char separator = DEFAULT_SEPARATOR)
+        {
+            _csvHeaderFields = header.Split(separator);
         }
 
         public int ConvertFromCsv(string csvFilePath, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
@@ -107,7 +117,7 @@ namespace CsvToAvro
 
         public void Append(string[] fields)
         {
-            GenericRecord record = Populate(fields);
+            GenericRecord record = GetGenericRecord(fields);
 
             IEnumerable<Field> invalidNullFields = GetInvalidNullFields(record);
 
@@ -125,7 +135,12 @@ namespace CsvToAvro
             Append(line.Split(separator));
         }
 
-        private GenericRecord Populate(string[] fields)
+        public void CloseWriter()
+        {
+            _dataFileWriter.Close();
+        }
+
+        private GenericRecord GetGenericRecord(string[] fields)
         {
             var record = new GenericRecord(_avroSchema);
             List<Field> avroFields = _avroSchema.Fields;
@@ -163,8 +178,6 @@ namespace CsvToAvro
         private object GetObject(Field field, string value)
         {
             Schema.Type fieldType = GetFieldType(field);
-
-            bool nullAllowed = GetFieldAllowsNull(field);
 
             if (!string.IsNullOrWhiteSpace(value))
             {
@@ -232,7 +245,7 @@ namespace CsvToAvro
                 }
             }
 
-            if (nullAllowed)
+            if (FieldAllowsNull(field))
             {
                 return null;
             }
@@ -267,53 +280,38 @@ namespace CsvToAvro
             return fieldType;
         }
 
-        private bool GetFieldAllowsNull(Field field)
+        private bool FieldAllowsNull(Field field)
         {
             Schema.Type fieldType = field.Schema.Tag;
 
-            if (fieldType == Schema.Type.Union)
+            if (fieldType != Schema.Type.Union)
             {
-                IList<Schema> schemas = ((UnionSchema) field.Schema).Schemas;
-
-                return schemas.Any(schema => schema.Tag == Schema.Type.Null);
+                return false;
             }
 
-            return false;
+            IList<Schema> schemas = ((UnionSchema) field.Schema).Schemas;
+
+            return schemas.Any(schema => schema.Tag == Schema.Type.Null);
         }
 
         private List<Field> GetInvalidNullFields(GenericRecord record)
         {
             List<Field> avroFields = _avroSchema.Fields;
 
-            var nullFields = new List<Field>();
+            var invalidNullFields = new List<Field>();
 
             foreach (Field field in avroFields)
             {
                 if (record.TryGetValue(field.Name, out object value))
                 {
-                    if (value == null && !GetFieldAllowsNull(field))
+                    if (value == null && !FieldAllowsNull(field))
                     {
-                        nullFields.Add(field);
+                        invalidNullFields.Add(field);
                     }
                 }
             }
 
-            return nullFields;
-        }
-
-        public void SetCsvHeader(string[] headerFields)
-        {
-            _csvHeaderFields = headerFields;
-        }
-
-        public void SetCsvHeader(string header, char separator = DEFAULT_SEPARATOR)
-        {
-            _csvHeaderFields = header.Split(separator);
-        }
-
-        public void CloseWriter()
-        {
-            _dataFileWriter.Close();
+            return invalidNullFields;
         }
     }
 }
