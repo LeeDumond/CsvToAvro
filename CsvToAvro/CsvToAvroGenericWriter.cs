@@ -132,12 +132,29 @@ namespace CsvToAvro
         /// <param name="csvFilePath">The path to a text file containing the CSV data.</param>
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file.</param>
         /// <param name="separator">The separator used by the supplied CSV data.</param>
-        /// <returns></returns>
+        /// <returns>The number of lines processed from the supplied file..</returns>
         public int ConvertFromCsv(string csvFilePath, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
+        {
+            return ConvertFromCsv(new CsvTextFieldParser(csvFilePath), headerLinesToSkip, separator);
+        }
+
+        /// <summary>
+        /// Converts a CSV file to a file in Avro format, using the schema, output path, and mode specified by the writer.
+        /// </summary>
+        /// <param name="reader">A TextReader containing the CSV data.</param>
+        /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file.</param>
+        /// <param name="separator">The separator used by the supplied CSV data.</param>
+        /// <returns>The number of lines processed from the supplied TextReader.</returns>
+        public int ConvertFromCsv(TextReader reader, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
+        {
+            return ConvertFromCsv(new CsvTextFieldParser(reader), headerLinesToSkip, separator);
+        }
+
+        private int ConvertFromCsv(CsvTextFieldParser parser, int headerLinesToSkip, char separator)
         {
             int counter = 0;
 
-            using (var parser = new CsvTextFieldParser(csvFilePath))
+            using (parser)
             {
                 parser.SetDelimiter(separator);
                 parser.TrimWhiteSpace = false;

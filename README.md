@@ -11,7 +11,7 @@ Use the static `CsvToAvroGenericWriter.CreateFrom...` factory methods to get a w
 The method to use will depend on how your schema is represented:
 
 - `CsvToAvroGenericWriter.CreateFromPath()` if you have a file path to a text file containing the schema in JSON format.
-- `CsvToAvroGenericWriter.CreateFromJson()` if you only have the raw text containing the schema in JSON format.
+- `CsvToAvroGenericWriter.CreateFromJson()` if you only have the raw text containing the schema in JSON format. This is handy in case you don't have file access to the schema.
 - `CsvToAvroGenericWriter.CreateFromSchema()` if you already have a pre-defined `RecordSchema` object containing the schema.
 
 ### Basic Usage
@@ -22,6 +22,14 @@ Once you have a writer, you can just tell it where your CSV file lives, and let 
 int counter = writer.ConvertFromCsv(csvFilePath);
 Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");
 ```
+In case you don't have file access to the CSV data, you can supply the raw CSV data via a TextReader:
+
+```C#
+using(TextReader reader = new StringReader(myCsvString))
+{
+    writer.ConvertFromCsv(reader);
+}
+```  
 
 You may also indicate how many header lines should be skipped in the CSV file (*default is 0*), and a custom separator (*default is comma*).
 
