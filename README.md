@@ -68,3 +68,7 @@ Normally, the writer expects the values in the CSV file to appear in the same or
 string[] headerFields = { "name", "address", "city", "state", "zip", "email" };
 writer.SetCsvHeader(headerFields);
 ``` 
+
+## Contributions
+
+Issues and contributions are most welcome. *Please target all pull requests to the* `development` *branch only*.
