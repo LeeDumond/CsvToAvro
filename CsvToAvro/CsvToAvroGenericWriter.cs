@@ -14,7 +14,15 @@ namespace CsvToAvro
     {
         public enum Mode
         {
-            Create,
+            /// <summary>
+            /// Specifies that the operating system should create a new file. If the file already exists, it will be overwritten.
+            /// This requires Write permission. If the file already exists but is a hidden file, an UnauthorizedAccessException
+            /// exception is thrown.
+            /// </summary>
+            Overwrite,
+            /// <summary>
+            /// Opens the file if it exists and seeks to the end of the file, or creates a new file. This requires Append permission. 
+            /// </summary>
             Append
         }
 
@@ -41,7 +49,7 @@ namespace CsvToAvro
             DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
             Codec codec = Codec.CreateCodec(Codec.Type.Deflate);
 
-            if (mode == Mode.Create)
+            if (mode == Mode.Overwrite)
             {
                 _dataFileWriter =
                     (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
@@ -55,36 +63,76 @@ namespace CsvToAvro
             }
         }
 
+        /// <summary>
+        /// Gets an instance of CsvToAvroGenericWriter.
+        /// </summary>
+        /// <param name="schemaFilePath">The path to the file containing the Avro schema as properly formatted JSON.</param>
+        /// <param name="outputFilePath">The path the Avro file should be written to.</param>
+        /// <param name="mode">If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        /// The default is Overwrite.</param>
+        /// <returns>A CsvToAvroGenericWriter object.</returns>
         public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
-            Mode mode = Mode.Create)
+            Mode mode = Mode.Overwrite)
         {
             string jsonSchema = File.ReadAllText(schemaFilePath, Encoding.UTF8);
 
             return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
         }
 
+        /// <summary>
+        /// Gets an instance of CsvToAvroGenericWriter.
+        /// </summary>
+        /// <param name="jsonSchema">A string containing the schema as properly formatted JSON.</param>
+        /// <param name="outputFilePath">The path the Avro file should be written to.</param>
+        /// <param name="mode">If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        /// The default is Overwrite.</param>
+        /// <returns>A CsvToAvroGenericWriter object.</returns>
         public static CsvToAvroGenericWriter CreateFromJson(string jsonSchema, string outputFilePath,
-            Mode mode = Mode.Create)
+            Mode mode = Mode.Overwrite)
         {
             return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
         }
 
+        /// <summary>
+        /// Gets an instance of CsvToAvroGenericWriter.
+        /// </summary>
+        /// <param name="schema">An Avro RecordSchema object containing the schema.</param>
+        /// <param name="outputFilePath">The path the Avro file should be written to.</param>
+        /// <param name="mode">If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        /// The default is Overwrite.</param>
+        /// <returns>A CsvToAvroGenericWriter object.</returns>
         public static CsvToAvroGenericWriter CreateFromSchema(RecordSchema schema, string outputFilePath,
-            Mode mode = Mode.Create)
+            Mode mode = Mode.Overwrite)
         {
             return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
         }
 
+        /// <summary>
+        /// Sets the list of CSV headers.
+        /// </summary>
+        /// <param name="headerFields">An array containing the field names in the order in which the fields appear in the CSV data.</param>
         public void SetCsvHeader(string[] headerFields)
         {
             _csvHeaderFields = headerFields;
         }
 
+        /// <summary>
+        /// Sets the list of CSV headers.
+        /// </summary>
+        /// <param name="header">An separated string containing the field names in the order in which the fields appear in the CSV data.</param>
+        /// <param name="separator">The separator used in the supplied string. The default is comma (',').</param>
         public void SetCsvHeader(string header, char separator = DEFAULT_SEPARATOR)
         {
             _csvHeaderFields = header.Split(separator);
         }
 
+        /// <summary>
+        /// Converts a CSV file to a file in Avro format, using the schema, output path, and mode specified by the writer.
+        /// </summary>
+        /// <param name="csvFilePath">The path to a text file containing the CSV data.</param>
+        /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file.</param>
+        /// <param name="separator">The separator used by the supplied CSV data.</param>
+        /// <returns></returns>
         public int ConvertFromCsv(string csvFilePath, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
             int counter = 0;
@@ -115,6 +163,10 @@ namespace CsvToAvro
             return counter;
         }
 
+        /// <summary>
+        /// Appends data to the end of the Avro file currently being written to. 
+        /// </summary>
+        /// <param name="fields">An array of strings containing the data to be appended.</param>
         public void Append(string[] fields)
         {
             GenericRecord record = GetGenericRecord(fields);
@@ -130,11 +182,22 @@ namespace CsvToAvro
             _dataFileWriter.Append(record);
         }
 
+        /// <summary>
+        /// Appends data to the end of the Avro file currently being written to. 
+        /// </summary>
+        /// <param name="line">An separated string containing the data to be appended.
+        /// No attempt is made to perform any complex parsing; it simply splits the string based on the supplied separator.
+        /// If your line data has quoted values, newlines, escaped quotes, etc. you should use the other Append method.
+        /// </param>
+        /// <param name="separator">The separator used in the supplied string. The default is comma (',').</param>
         public void Append(string line, char separator = DEFAULT_SEPARATOR)
         {
             Append(line.Split(separator));
         }
 
+        /// <summary>
+        /// Writes the Avro header metadata, closes the filestream, and cleans up resources.
+        /// </summary>
         public void CloseWriter()
         {
             _dataFileWriter.Close();
