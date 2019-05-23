@@ -14,6 +14,8 @@ The method to use will depend on how your schema is represented:
 - `CsvToAvroGenericWriter.CreateFromJson()` if you only have the raw text containing the schema in JSON format. This is handy in case you don't have file access to the schema.
 - `CsvToAvroGenericWriter.CreateFromSchema()` if you already have a pre-defined `RecordSchema` object containing the schema.
 
+[Read the Avro schema specification here.](https://avro.apache.org/docs/1.8.2/spec.html#schemas)
+
 ### Basic Usage
 
 Once you have a writer, you can just tell it where your CSV file lives, and let it do all of the work:
