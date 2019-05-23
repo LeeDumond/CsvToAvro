@@ -15,20 +15,19 @@ namespace CsvToAvro
         public enum Mode
         {
             /// <summary>
-            /// Specifies that the operating system should create a new file. If the file already exists, it will be overwritten.
+            /// If the file already exists, overwrites the file; otherwise, creates a new file.
             /// This requires Write permission. If the file already exists but is a hidden file, an UnauthorizedAccessException
             /// exception is thrown.
             /// </summary>
             Overwrite,
             /// <summary>
-            /// Opens the file if it exists and seeks to the end of the file, or creates a new file. This requires Append permission. 
+            /// If the file already exists, opens the file and seeks to the end of the file; otherwise, creates a new file. This requires Append permission. 
             /// </summary>
             Append
         }
 
         private const char DEFAULT_SEPARATOR = ',';
         private static RecordSchema _avroSchema;
-
         private static DataFileWriter<GenericRecord> _dataFileWriter;
         private string[] _csvHeaderFields;
 
