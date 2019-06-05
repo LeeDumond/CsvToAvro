@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
-using CsvToAvroConverter;
+using CsvToAvro;
+
 
 namespace CsvToAvroConsoleApp
 {

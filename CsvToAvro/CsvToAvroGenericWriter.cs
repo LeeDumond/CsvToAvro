@@ -8,7 +8,7 @@ using Avro.File;
 using Avro.Generic;
 using NotVisualBasic.FileIO;
 
-namespace CsvToAvroConverter
+namespace CsvToAvro
 {
     public class CsvToAvroGenericWriter
     {

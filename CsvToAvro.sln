@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CsvToAvroConsoleApp", "CsvToAvroConsoleApp\CsvToAvroConsoleApp.csproj", "{75F71148-148C-4C4E-AE9B-476F80D7348B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CsvToAvroConverter", "CsvToAvroConverter\CsvToAvroConverter.csproj", "{3FA4C48D-EBD9-4754-99E3-9BE11DD95FF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CsvToAvro", "CsvToAvro\CsvToAvro.csproj", "{3FA4C48D-EBD9-4754-99E3-9BE11DD95FF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
