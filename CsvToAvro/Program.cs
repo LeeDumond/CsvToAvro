@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using CsvToAvroConverter;
 
 namespace CsvToAvro
 {
@@ -13,12 +14,12 @@ namespace CsvToAvro
 
             CsvToAvroGenericWriter writer = CsvToAvroGenericWriter.CreateFromPath(schemaFilePath, outputFilePath);
 
-            // BASIC USAGE
+            //// BASIC USAGE
             int counter = writer.ConvertFromCsv(csvFilePath);
 
             // ADVANCED USAGE
 
-            //  string jsonSchema = @"{
+            //string jsonSchema = @"{
             //  ""namespace"": ""com.leedumond"",
             //  ""type"": ""record"",
             //  ""name"": ""CostIndex"",
@@ -32,7 +33,7 @@ namespace CsvToAvro
             //    { ""name"": ""mp_gpci"", ""type"": [""float"", ""null""] }
             //  ]
             //}";
-            //
+
             //CsvToAvroGenericWriter writer = CsvToAvroGenericWriter.CreateFromJson(jsonSchema, outputFilePath);
 
             //string[] headerFields = { "medicare_administrative_contractor", "locality_number", "locality_name", "pw_gpci", "pe_gpci", "mp_gpci" };

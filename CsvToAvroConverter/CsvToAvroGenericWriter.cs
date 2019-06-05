@@ -8,7 +8,7 @@ using Avro.File;
 using Avro.Generic;
 using NotVisualBasic.FileIO;
 
-namespace CsvToAvro
+namespace CsvToAvroConverter
 {
     public class CsvToAvroGenericWriter
     {
@@ -33,7 +33,7 @@ namespace CsvToAvro
 
         private CsvToAvroGenericWriter(string jsonSchema, string outputFilePath, Mode mode)
         {
-            _avroSchema = (RecordSchema) Schema.Parse(jsonSchema);
+            _avroSchema = (RecordSchema)Schema.Parse(jsonSchema);
             BuildDataFileWriter(outputFilePath, mode);
         }
 
@@ -51,13 +51,13 @@ namespace CsvToAvro
             if (mode == Mode.Overwrite)
             {
                 _dataFileWriter =
-                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                    (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
                         new FileStream(outputFilePath, FileMode.Create), codec);
             }
             else
             {
                 _dataFileWriter =
-                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                    (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
                         new FileStream(outputFilePath, FileMode.Append), codec);
             }
         }
@@ -343,7 +343,7 @@ namespace CsvToAvro
 
             if (fieldType == Schema.Type.Union)
             {
-                IList<Schema> types = ((UnionSchema) field.Schema).Schemas;
+                IList<Schema> types = ((UnionSchema)field.Schema).Schemas;
 
                 foreach (Schema schema in types)
                 {
@@ -368,7 +368,7 @@ namespace CsvToAvro
                 return false;
             }
 
-            IList<Schema> schemas = ((UnionSchema) field.Schema).Schemas;
+            IList<Schema> schemas = ((UnionSchema)field.Schema).Schemas;
 
             return schemas.Any(schema => schema.Tag == Schema.Type.Null);
         }
