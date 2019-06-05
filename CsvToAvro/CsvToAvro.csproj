@@ -7,6 +7,7 @@
     <Description>A simple .NET Standard 2.0 library to convert CSV files to AVRO files, when accompanied by a known schema that describes the field names and data types in the source CSV file.</Description>
     <Copyright>2019 Lee Dumond</Copyright>
     <PackageProjectUrl>https://github.com/LeeDumond/CsvToAvro</PackageProjectUrl>
+    <PackageTags>avro csv converter</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
