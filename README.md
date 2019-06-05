@@ -4,9 +4,9 @@ A simple .NET Standard 2.0 library to convert CSV files to AVRO files, when acco
 
 ## How it works
 
-The major player here is the `CsvToAvroGenericWriter.cs` class. The `Program.cs` class is included as a demonstration of usage.
+The major player here is the `CsvToAvro` class library. The `CsvToAvroConsoleApp` class is included as a demonstration of usage.
 
-Use the static `CsvToAvroGenericWriter.CreateFrom...` factory methods to get a writer object. Each of them accepts as arguments a schema, the file path for the resulting AVRO file, and a mode that indicates whether you want to *overwrite* or *append* to the output file if one already exists.
+To use, import the `CsvToAvro` library, then use the static `CsvToAvroGenericWriter.CreateFrom...` factory methods to get a writer object. Each of them accepts as arguments a schema, the file path for the resulting AVRO file, and a mode that indicates whether you want to *overwrite* or *append* to the output file if one already exists.
 
 The method to use will depend on how your schema is represented:
 
@@ -21,7 +21,13 @@ The method to use will depend on how your schema is represented:
 Once you have a writer, you can just tell it where your CSV file lives, and let it do all of the work:
 
 ```C#
+string schemaFilePath = @"C:\CsvToAvro\mySchema.avsc";
+string csvFilePath = @"C:\CsvToAvro\myCsv.csv";
+string outputFilePath = @"C:\CsvToAvro\myAvro.avro";
+            
+CsvToAvroGenericWriter writer = CsvToAvroGenericWriter.CreateFromPath(schemaFilePath, outputFilePath);
 int counter = writer.ConvertFromCsv(csvFilePath);
+
 Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");
 ```
 In case you don't have file access to the CSV data, you can supply the raw CSV data via a TextReader:
