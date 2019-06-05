@@ -2,7 +2,6 @@
 using System.IO;
 using CsvToAvro;
 
-
 namespace CsvToAvroConsoleApp
 {
     class Program
