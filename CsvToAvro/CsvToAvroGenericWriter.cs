@@ -127,6 +127,7 @@ namespace CsvToAvro
 
         /// <summary>
         /// Converts a CSV file to a file in Avro format, using the schema, output path, and mode specified by the writer.
+        /// NOTE: This method closes the writer once execution is complete.
         /// </summary>
         /// <param name="csvFilePath">The path to a text file containing the CSV data.</param>
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file.</param>
@@ -139,6 +140,7 @@ namespace CsvToAvro
 
         /// <summary>
         /// Converts a CSV file to a file in Avro format, using the schema, output path, and mode specified by the writer.
+        /// NOTE: This method closes the writer once execution is complete.
         /// </summary>
         /// <param name="reader">A TextReader containing the CSV data.</param>
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file.</param>
