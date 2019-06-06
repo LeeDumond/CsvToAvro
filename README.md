@@ -43,9 +43,11 @@ using(TextReader reader = new StringReader(myCsvString))
 
 You may also indicate how many header lines should be skipped in the CSV file (*default is 0*), and a custom separator (*default is comma*).
 
+This usage is capable of parsing complex CSV data including quoted lines, embedded newlines, escaped quotes, and the like; and is recommended for most scenarios.
+
 ### Advanced Usage
 
-If you need more control, you may parse the CSV yourself and use any of the `Append()` overloads to add the values from each line to the writer manually (don't forget to close the writer after you're done!):
+If you need more control, you may loop through your CSV data yourself and use any of the `Append()` overloads to add the values from each line to the writer manually (don't forget to close the writer after you're done!):
 
 ```C#
 int counter = 0;
@@ -68,7 +70,7 @@ Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");
 ```
 The `Append()` methods accept either an array of string values, or a raw separated string. 
 
-Note that the `Append(string line, char separator = DEFAULT_SEPARATOR)` overload makes no attempt to perform any complex parsing; it simply splits the string based on the supplied separator (the default is comma). If your line data has quoted values, newlines, escaped quotes, etc. you should use the `Append(string[] fields)` overload instead.
+Note that the `Append(string line, char separator = DEFAULT_SEPARATOR)` overload makes no attempt to perform any complex parsing; it simply splits the string based on the supplied separator (the default is comma). If your line data has quoted values, newlines, escaped quotes, etc. you should parse the data yourself and use the `Append(string[] fields)` overload, or consider using the `ConvertFromCsv` method as explained above.
 
 ### Dealing with Field Ordering
 
