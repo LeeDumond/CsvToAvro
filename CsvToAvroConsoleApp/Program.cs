@@ -15,7 +15,7 @@ namespace CsvToAvroConsoleApp
             // uncomment whichever scenario you wish to demonstrate below
 
             BasicUsage();
-            //AdvancedUsage();
+            // AdvancedUsage();
         }
 
         private static void BasicUsage()
@@ -65,7 +65,7 @@ namespace CsvToAvroConsoleApp
                 }
             }
 
-            writer.CloseWriter();
+            writer.Dispose();
 
             Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");
             Console.WriteLine($"The results were written to: {outputFilePath}");

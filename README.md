@@ -47,7 +47,7 @@ This usage is capable of parsing complex CSV data including quoted lines, embedd
 
 ### Advanced Usage
 
-If you need more control, you may loop through your CSV data yourself and use any of the `Append()` overloads to add the values from each line to the writer manually (don't forget to close the writer after you're done!):
+If you need more control, you may loop through your CSV data yourself and use any of the `Append()` overloads to add the values from each line to the writer manually (don't forget to call `Dispose()` on the writer after you're done!):
 
 ```C#
 int counter = 0;
@@ -64,7 +64,7 @@ using (var reader = new StreamReader(csvFilePath))
     }
 }
 
-writer.CloseWriter();
+writer.Dispose();
 
 Console.WriteLine($"There were {counter} lines processed from: {csvFilePath}");
 ```

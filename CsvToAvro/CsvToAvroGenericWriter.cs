@@ -10,7 +10,7 @@ using NotVisualBasic.FileIO;
 
 namespace CsvToAvro
 {
-    public class CsvToAvroGenericWriter
+    public class CsvToAvroGenericWriter : IDisposable
     {
         public enum Mode
         {
@@ -176,7 +176,7 @@ namespace CsvToAvro
                 }
             }
 
-            CloseWriter();
+            Dispose();
 
             return counter;
         }
@@ -216,6 +216,7 @@ namespace CsvToAvro
         /// <summary>
         /// Writes the Avro header metadata, closes the filestream, and cleans up resources.
         /// </summary>
+        [Obsolete("The CloseWriter() method is deprecated. Please use the Dispose() method instead.", false)]
         public void CloseWriter()
         {
             _dataFileWriter.Close();
@@ -393,6 +394,14 @@ namespace CsvToAvro
             }
 
             return invalidNullFields;
+        }
+
+        /// <summary>
+        /// Writes the Avro header metadata, closes the filestream, and cleans up resources.
+        /// </summary>
+        public void Dispose()
+        {
+            _dataFileWriter.Dispose();
         }
     }
 }
