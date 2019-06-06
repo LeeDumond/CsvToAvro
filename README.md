@@ -1,6 +1,6 @@
 # CsvToAvro
 
-![Nuget](https://img.shields.io/nuget/v/CsvToAvro.svg)
+[![Nuget](https://img.shields.io/nuget/v/CsvToAvro.svg)](https://www.nuget.org/packages/CsvToAvro/)
 
 A simple .NET Standard 2.0 library to convert CSV files to AVRO files, when accompanied by a known schema that describes the field names and data types in the source CSV file.
 
