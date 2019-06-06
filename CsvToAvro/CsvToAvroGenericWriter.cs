@@ -64,18 +64,22 @@ namespace CsvToAvro
         /// <param name="mode">If the output Avro file already exists, specified whether it should be overwritten or appended to.
         /// The default is Overwrite.</param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
-        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">path</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters.   -or-  <paramref name="path">path</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
-        /// <exception cref="T:System.NotSupportedException"><paramref name="outputFilePath">path</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.</exception>
-        /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath">path</paramref> is null.</exception>
+        /// <exception cref="T:System.ArgumentException"><paramref name="schemaFilePath">schemaFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="schemaFilePath">schemaFilePath</paramref> is null.</exception>
+        /// <exception cref="T:System.ArgumentException">The contents of the schema file is an empty string (""), or contains only white space.</exception>
+        /// <exception cref="T:Avro.SchemaParseException">The contents of the schema file could not correctly converted into valid JSON.</exception>
+        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters.   -or-  <paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
+        /// <exception cref="T:System.NotSupportedException"><paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission.</exception>
-        /// <exception cref="T:System.IO.IOException">An I/O error, usually meaning the underlying stream has been unexpectedly closed.</exception>
+        /// <exception cref="T:System.IO.IOException">An I/O error has occured while opening the source file, or the underlying stream has been unexpectedly closed.</exception>
         /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
         /// <exception cref="T:System.IO.PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
         /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="mode">mode</paramref> contains an invalid value.</exception>
         public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
-            string jsonSchema = File.ReadAllText(schemaFilePath, Encoding.UTF8);
+            string jsonSchema = File.ReadAllText(schemaFilePath);
             RecordSchema schema = (RecordSchema)Schema.Parse(jsonSchema);
 
             return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
@@ -89,9 +93,30 @@ namespace CsvToAvro
         /// <param name="mode">If the output Avro file already exists, specified whether it should be overwritten or appended to.
         /// The default is Overwrite.</param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
+        /// <exception cref="T:System.ArgumentException"><paramref name="jsonSchema">jsonSchema</paramref> is an empty string (""), or contains only white space.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="jsonSchema">jsonSchema</paramref> is null.</exception>
+        /// <exception cref="T:Avro.SchemaParseException"><paramref name="jsonSchema">jsonSchema</paramref> could not correctly converted into valid JSON.</exception>
+        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters.   -or-  <paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
+        /// <exception cref="T:System.NotSupportedException"><paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission.</exception>
+        /// <exception cref="T:System.IO.IOException">An I/O error, usually meaning the underlying stream has been unexpectedly closed.</exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
+        /// <exception cref="T:System.IO.PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="mode">mode</paramref> contains an invalid value.</exception>
         public static CsvToAvroGenericWriter CreateFromJson(string jsonSchema, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
+            if (jsonSchema == null)
+            {
+                throw new ArgumentNullException(nameof(jsonSchema));
+            }
+
+            if (string.IsNullOrWhiteSpace(jsonSchema))
+            {
+                throw new ArgumentException($"{nameof(jsonSchema)} is empty or contains only whitespace.", nameof(jsonSchema));
+            }
+
             RecordSchema schema = (RecordSchema)Schema.Parse(jsonSchema);
 
             return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
@@ -105,6 +130,14 @@ namespace CsvToAvro
         /// <param name="mode">If the output Avro file already exists, specified whether it should be overwritten or appended to.
         /// The default is Overwrite.</param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
+        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters.   -or-  <paramref name="path">path</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
+        /// <exception cref="T:System.NotSupportedException"><paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission.</exception>
+        /// <exception cref="T:System.IO.IOException">An I/O error, usually meaning the underlying stream has been unexpectedly closed.</exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
+        /// <exception cref="T:System.IO.PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="mode">mode</paramref> contains an invalid value.</exception>
         public static CsvToAvroGenericWriter CreateFromSchema(RecordSchema schema, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
@@ -117,6 +150,16 @@ namespace CsvToAvro
         /// <param name="headerFields">An array containing the field names in the order in which the fields appear in the CSV data.</param>
         public void SetCsvHeader(string[] headerFields)
         {
+            if (headerFields == null)
+            {
+                throw new ArgumentNullException(nameof(headerFields));
+            }
+
+            if (!headerFields.Any())
+            {
+                throw new ArgumentException($"{nameof(headerFields)} has no elements.", nameof(headerFields));
+            }
+
             _csvHeaderFields = headerFields;
         }
 
@@ -127,6 +170,16 @@ namespace CsvToAvro
         /// <param name="separator">The separator used in the supplied string. The default is comma (',').</param>
         public void SetCsvHeader(string header, char separator = DEFAULT_SEPARATOR)
         {
+            if (header == null)
+            {
+                throw new ArgumentNullException(nameof(header));
+            }
+
+            if (string.IsNullOrWhiteSpace(header))
+            {
+                throw new ArgumentException($"{nameof(header)} is empty or contains only whitespace.", nameof(header));
+            }
+
             _csvHeaderFields = header.Split(separator);
         }
 
