@@ -6,7 +6,7 @@ A simple .NET Standard 2.0 library to convert CSV files to AVRO files, when acco
 
 ## How it works
 
-The major player here is the `CsvToAvro` class library. The `CsvToAvroConsoleApp` class is included as a demonstration of usage.
+The major player here is the `CsvToAvro` class library. The `CsvToAvroConsoleApp` is included as a demonstration of usage.
 
 To use, import the `CsvToAvro` library, then use the static `CsvToAvroGenericWriter.CreateFrom...` factory methods to get a writer object. Each of them accepts as arguments a schema, the file path for the resulting AVRO file, and a mode that indicates whether you want to *overwrite* or *append* to the output file if one already exists.
 
