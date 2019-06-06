@@ -64,6 +64,14 @@ namespace CsvToAvro
         /// <param name="mode">If the output Avro file already exists, specified whether it should be overwritten or appended to.
         /// The default is Overwrite.</param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
+        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">path</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters.   -or-  <paramref name="path">path</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
+        /// <exception cref="T:System.NotSupportedException"><paramref name="outputFilePath">path</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath">path</paramref> is null.</exception>
+        /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission.</exception>
+        /// <exception cref="T:System.IO.IOException">An I/O error, usually meaning the underlying stream has been unexpectedly closed.</exception>
+        /// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
+        /// <exception cref="T:System.IO.PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters.</exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="mode">mode</paramref> contains an invalid value.</exception>
         public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
