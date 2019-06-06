@@ -31,12 +31,6 @@ namespace CsvToAvro
         private static DataFileWriter<GenericRecord> _dataFileWriter;
         private string[] _csvHeaderFields;
 
-        private CsvToAvroGenericWriter(string jsonSchema, string outputFilePath, Mode mode)
-        {
-            _avroSchema = (RecordSchema)Schema.Parse(jsonSchema);
-            BuildDataFileWriter(outputFilePath, mode);
-        }
-
         private CsvToAvroGenericWriter(RecordSchema schema, string outputFilePath, Mode mode)
         {
             _avroSchema = schema;
@@ -74,8 +68,9 @@ namespace CsvToAvro
             Mode mode = Mode.Overwrite)
         {
             string jsonSchema = File.ReadAllText(schemaFilePath, Encoding.UTF8);
+            RecordSchema schema = (RecordSchema)Schema.Parse(jsonSchema);
 
-            return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
+            return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
         }
 
         /// <summary>
@@ -89,7 +84,9 @@ namespace CsvToAvro
         public static CsvToAvroGenericWriter CreateFromJson(string jsonSchema, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
-            return new CsvToAvroGenericWriter(jsonSchema, outputFilePath, mode);
+            RecordSchema schema = (RecordSchema)Schema.Parse(jsonSchema);
+
+            return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
         }
 
         /// <summary>
