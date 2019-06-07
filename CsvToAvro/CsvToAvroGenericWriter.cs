@@ -154,6 +154,26 @@ namespace CsvToAvro
         public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
             Encoding encoding, Mode mode = Mode.Overwrite)
         {
+            if (schemaFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(schemaFilePath));
+            }
+
+            if (outputFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(outputFilePath));
+            }
+
+            if (string.IsNullOrWhiteSpace(schemaFilePath))
+            {
+                throw new ArgumentException("Value cannot be an empty string, or contain only whitespace.", nameof(schemaFilePath));
+            }
+
+            if (string.IsNullOrWhiteSpace(outputFilePath))
+            {
+                throw new ArgumentException("Value cannot be an empty string, or contain only whitespace.", nameof(outputFilePath));
+            }
+
             string jsonSchema = File.ReadAllText(schemaFilePath, encoding);
             var schema = (RecordSchema) Schema.Parse(jsonSchema);
 
