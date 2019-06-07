@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Avro;
 using Avro.File;
 using Avro.Generic;
 using NotVisualBasic.FileIO;
+
+[assembly: InternalsVisibleTo("CsvToAvro.Tests")]
 
 namespace CsvToAvro
 {
@@ -33,6 +37,7 @@ namespace CsvToAvro
         private static RecordSchema _avroSchema;
         private static DataFileWriter<GenericRecord> _dataFileWriter;
         private string[] _csvHeaderFields;
+        private static IFileSystem _fileSystem;
 
         private CsvToAvroGenericWriter(RecordSchema schema, string outputFilePath, Mode mode)
         {
@@ -40,20 +45,39 @@ namespace CsvToAvro
             BuildDataFileWriter(outputFilePath, mode);
         }
 
+        internal static IFileSystem FileSystemAbstract
+        {
+            private get { return _fileSystem ?? (_fileSystem = new FileSystem()); }
+            set { _fileSystem = value; }
+        }
+
         private static void BuildDataFileWriter(string outputFilePath, Mode mode)
         {
+            if (outputFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(outputFilePath));
+            }
+
+            if (string.IsNullOrWhiteSpace(outputFilePath))
+            {
+                throw new ArgumentException("Value cannot be an empty string, or contain only whitespace.", nameof(outputFilePath));
+            }
+
             DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
             Codec codec = Codec.CreateCodec(Codec.Type.Deflate);
 
-            if (mode == Mode.Overwrite)
+            switch (mode)
             {
-                _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                    new FileStream(outputFilePath, FileMode.Create), codec);
-            }
-            else
-            {
-                _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                    new FileStream(outputFilePath, FileMode.Append), codec);
+                case Mode.Overwrite:
+                    _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                        FileSystemAbstract.FileStream.Create(outputFilePath, FileMode.Create), codec);
+                    break;
+                case Mode.Append:
+                    _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                        FileSystemAbstract.FileStream.Create(outputFilePath, FileMode.Append), codec);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode));
             }
         }
 
@@ -159,22 +183,14 @@ namespace CsvToAvro
                 throw new ArgumentNullException(nameof(schemaFilePath));
             }
 
-            if (outputFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(outputFilePath));
-            }
+            
 
             if (string.IsNullOrWhiteSpace(schemaFilePath))
             {
                 throw new ArgumentException("Value cannot be an empty string, or contain only whitespace.", nameof(schemaFilePath));
             }
 
-            if (string.IsNullOrWhiteSpace(outputFilePath))
-            {
-                throw new ArgumentException("Value cannot be an empty string, or contain only whitespace.", nameof(outputFilePath));
-            }
-
-            string jsonSchema = File.ReadAllText(schemaFilePath, encoding);
+            string jsonSchema = FileSystemAbstract.File.ReadAllText(schemaFilePath, encoding);
             var schema = (RecordSchema) Schema.Parse(jsonSchema);
 
             return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
@@ -221,16 +237,16 @@ namespace CsvToAvro
         public static CsvToAvroGenericWriter CreateFromJson(string jsonSchema, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
-            if (jsonSchema == null)
-            {
-                throw new ArgumentNullException(nameof(jsonSchema));
-            }
+            //if (jsonSchema == null)
+            //{
+            //    throw new ArgumentNullException(nameof(jsonSchema));
+            //}
 
-            if (string.IsNullOrWhiteSpace(jsonSchema))
-            {
-                throw new ArgumentException($"{nameof(jsonSchema)} is empty or contains only whitespace.",
-                    nameof(jsonSchema));
-            }
+            //if (string.IsNullOrWhiteSpace(jsonSchema))
+            //{
+            //    throw new ArgumentException($"{nameof(jsonSchema)} is empty or contains only whitespace.",
+            //        nameof(jsonSchema));
+            //}
 
             var schema = (RecordSchema) Schema.Parse(jsonSchema);
 
@@ -280,15 +296,15 @@ namespace CsvToAvro
         /// <exception cref="ArgumentNullException"><paramref name="headerFields">headerFields</paramref> is null.</exception>
         public void SetCsvHeader(string[] headerFields)
         {
-            if (headerFields == null)
-            {
-                throw new ArgumentNullException(nameof(headerFields));
-            }
+            //if (headerFields == null)
+            //{
+            //    throw new ArgumentNullException(nameof(headerFields));
+            //}
 
-            if (headerFields.Length == 0)
-            {
-                throw new ArgumentException($"{nameof(headerFields)} has no elements.", nameof(headerFields));
-            }
+            //if (headerFields.Length == 0)
+            //{
+            //    throw new ArgumentException($"{nameof(headerFields)} has no elements.", nameof(headerFields));
+            //}
 
             _csvHeaderFields = headerFields;
         }
@@ -308,15 +324,15 @@ namespace CsvToAvro
         /// <exception cref="ArgumentNullException"><paramref name="header">header</paramref> is null.</exception>
         public void SetCsvHeader(string header, char separator = DEFAULT_SEPARATOR)
         {
-            if (header == null)
-            {
-                throw new ArgumentNullException(nameof(header));
-            }
+            //if (header == null)
+            //{
+            //    throw new ArgumentNullException(nameof(header));
+            //}
 
-            if (string.IsNullOrWhiteSpace(header))
-            {
-                throw new ArgumentException($"{nameof(header)} is empty or contains only whitespace.", nameof(header));
-            }
+            //if (string.IsNullOrWhiteSpace(header))
+            //{
+            //    throw new ArgumentException($"{nameof(header)} is empty or contains only whitespace.", nameof(header));
+            //}
 
             _csvHeaderFields = header.Split(separator);
         }
@@ -368,27 +384,27 @@ namespace CsvToAvro
         public int ConvertFromCsv(string csvFilePath, Encoding encoding, int headerLinesToSkip = 0,
             char separator = DEFAULT_SEPARATOR)
         {
-            if (csvFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(csvFilePath));
-            }
+            //if (csvFilePath == null)
+            //{
+            //    throw new ArgumentNullException(nameof(csvFilePath));
+            //}
 
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
+            //if (encoding == null)
+            //{
+            //    throw new ArgumentNullException(nameof(encoding));
+            //}
 
-            if (string.IsNullOrWhiteSpace(csvFilePath))
-            {
-                throw new ArgumentException($"{nameof(csvFilePath)} is empty or contains only whitespace.",
-                    nameof(csvFilePath));
-            }
+            //if (string.IsNullOrWhiteSpace(csvFilePath))
+            //{
+            //    throw new ArgumentException($"{nameof(csvFilePath)} is empty or contains only whitespace.",
+            //        nameof(csvFilePath));
+            //}
 
-            if (headerLinesToSkip <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(headerLinesToSkip),
-                    $"{nameof(headerLinesToSkip)} must be greater than zero.");
-            }
+            //if (headerLinesToSkip < 0)
+            //{
+            //    throw new ArgumentOutOfRangeException(nameof(headerLinesToSkip),
+            //        $"{nameof(headerLinesToSkip)} must be greater than zero.");
+            //}
 
             return ConvertFromCsv(new CsvTextFieldParser(csvFilePath, encoding), headerLinesToSkip, separator);
         }
@@ -429,21 +445,21 @@ namespace CsvToAvro
         public int ConvertFromCsv(Stream stream, Encoding encoding, int headerLinesToSkip = 0,
             char separator = DEFAULT_SEPARATOR)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
+            //if (stream == null)
+            //{
+            //    throw new ArgumentNullException(nameof(stream));
+            //}
 
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
+            //if (encoding == null)
+            //{
+            //    throw new ArgumentNullException(nameof(encoding));
+            //}
 
-            if (headerLinesToSkip <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(headerLinesToSkip),
-                    $"{nameof(headerLinesToSkip)} must be greater than zero.");
-            }
+            //if (headerLinesToSkip < 0)
+            //{
+            //    throw new ArgumentOutOfRangeException(nameof(headerLinesToSkip),
+            //        $"{nameof(headerLinesToSkip)} must be greater than zero.");
+            //}
 
             return ConvertFromCsv(new CsvTextFieldParser(stream, encoding), headerLinesToSkip, separator);
         }
@@ -463,16 +479,16 @@ namespace CsvToAvro
         /// </exception>
         public int ConvertFromCsv(TextReader reader, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
+            //if (reader == null)
+            //{
+            //    throw new ArgumentNullException(nameof(reader));
+            //}
 
-            if (headerLinesToSkip <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(headerLinesToSkip),
-                    $"{nameof(headerLinesToSkip)} must be greater than zero.");
-            }
+            //if (headerLinesToSkip < 0)
+            //{
+            //    throw new ArgumentOutOfRangeException(nameof(headerLinesToSkip),
+            //        $"{nameof(headerLinesToSkip)} must be greater than zero.");
+            //}
 
             return ConvertFromCsv(new CsvTextFieldParser(reader), headerLinesToSkip, separator);
         }
@@ -515,15 +531,15 @@ namespace CsvToAvro
         /// <exception cref="ArgumentException"><paramref name="fields">fields</paramref> contains no elements.</exception>
         public void Append(string[] fields)
         {
-            if (fields == null)
-            {
-                throw new ArgumentNullException(nameof(fields));
-            }
+            //if (fields == null)
+            //{
+            //    throw new ArgumentNullException(nameof(fields));
+            //}
 
-            if (fields.Length == 0)
-            {
-                throw new ArgumentException($"{nameof(fields)} has no elements.", nameof(fields));
-            }
+            //if (fields.Length == 0)
+            //{
+            //    throw new ArgumentException($"{nameof(fields)} has no elements.", nameof(fields));
+            //}
 
             GenericRecord record = GetGenericRecord(fields);
 
@@ -554,15 +570,15 @@ namespace CsvToAvro
         /// <exception cref="ArgumentNullException"><paramref name="line">line</paramref> is null.</exception>
         public void Append(string line, char separator = DEFAULT_SEPARATOR)
         {
-            if (line == null)
-            {
-                throw new ArgumentNullException(nameof(line));
-            }
+            //if (line == null)
+            //{
+            //    throw new ArgumentNullException(nameof(line));
+            //}
 
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                throw new ArgumentException($"{nameof(line)} is empty, or contains only whitespace.", nameof(line));
-            }
+            //if (string.IsNullOrWhiteSpace(line))
+            //{
+            //    throw new ArgumentException($"{nameof(line)} is empty, or contains only whitespace.", nameof(line));
+            //}
 
             Append(line.Split(separator));
         }
