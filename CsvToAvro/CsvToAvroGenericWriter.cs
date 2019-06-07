@@ -16,12 +16,14 @@ namespace CsvToAvro
         {
             /// <summary>
             /// If the file already exists, overwrites the file; otherwise, creates a new file.
-            /// This requires Write permission. If the file already exists but is a hidden file, an UnauthorizedAccessException
-            /// exception is thrown.
+            /// This requires Write permission. If the file already exists but is a hidden file,
+            /// an UnauthorizedAccessException exception is thrown.
             /// </summary>
             Overwrite,
+
             /// <summary>
-            /// If the file already exists, opens the file and seeks to the end of the file; otherwise, creates a new file. This requires Append permission. 
+            /// If the file already exists, opens the file and seeks to the end of the file; otherwise, creates a new file.
+            /// This requires Append permission. 
             /// </summary>
             Append
         }
@@ -45,13 +47,13 @@ namespace CsvToAvro
             if (mode == Mode.Overwrite)
             {
                 _dataFileWriter =
-                    (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
                         new FileStream(outputFilePath, FileMode.Create), codec);
             }
             else
             {
                 _dataFileWriter =
-                    (DataFileWriter<GenericRecord>)DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
+                    (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
                         new FileStream(outputFilePath, FileMode.Append), codec);
             }
         }
@@ -68,7 +70,7 @@ namespace CsvToAvro
         /// <exception cref="T:System.ArgumentNullException"><paramref name="schemaFilePath">schemaFilePath</paramref> is null.</exception>
         /// <exception cref="T:System.ArgumentException">The contents of the schema file is an empty string (""), or contains only white space.</exception>
         /// <exception cref="T:Avro.SchemaParseException">The contents of the schema file could not correctly converted into valid JSON.</exception>
-        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters.   -or-  <paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
+        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters, or refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
         /// <exception cref="T:System.NotSupportedException"><paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.</exception>
         /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission.</exception>
@@ -80,7 +82,7 @@ namespace CsvToAvro
             Mode mode = Mode.Overwrite)
         {
             string jsonSchema = File.ReadAllText(schemaFilePath);
-            RecordSchema schema = (RecordSchema)Schema.Parse(jsonSchema);
+            RecordSchema schema = (RecordSchema) Schema.Parse(jsonSchema);
 
             return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
         }
@@ -96,7 +98,7 @@ namespace CsvToAvro
         /// <exception cref="T:System.ArgumentException"><paramref name="jsonSchema">jsonSchema</paramref> is an empty string (""), or contains only white space.</exception>
         /// <exception cref="T:System.ArgumentNullException"><paramref name="jsonSchema">jsonSchema</paramref> is null.</exception>
         /// <exception cref="T:Avro.SchemaParseException"><paramref name="jsonSchema">jsonSchema</paramref> could not correctly converted into valid JSON.</exception>
-        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters.   -or-  <paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
+        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters, or refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
         /// <exception cref="T:System.NotSupportedException"><paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.</exception>
         /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission.</exception>
@@ -114,10 +116,11 @@ namespace CsvToAvro
 
             if (string.IsNullOrWhiteSpace(jsonSchema))
             {
-                throw new ArgumentException($"{nameof(jsonSchema)} is empty or contains only whitespace.", nameof(jsonSchema));
+                throw new ArgumentException($"{nameof(jsonSchema)} is empty or contains only whitespace.",
+                    nameof(jsonSchema));
             }
 
-            RecordSchema schema = (RecordSchema)Schema.Parse(jsonSchema);
+            RecordSchema schema = (RecordSchema) Schema.Parse(jsonSchema);
 
             return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
         }
@@ -130,7 +133,7 @@ namespace CsvToAvro
         /// <param name="mode">If the output Avro file already exists, specified whether it should be overwritten or appended to.
         /// The default is Overwrite.</param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
-        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters.   -or-  <paramref name="path">path</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
+        /// <exception cref="T:System.ArgumentException"><paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""), contains only white space, or contains one or more invalid characters; or refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in an NTFS environment.</exception>
         /// <exception cref="T:System.NotSupportedException"><paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.</exception>
         /// <exception cref="T:System.ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
         /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission.</exception>
@@ -148,6 +151,8 @@ namespace CsvToAvro
         /// Sets the list of CSV headers.
         /// </summary>
         /// <param name="headerFields">An array containing the field names in the order in which the fields appear in the CSV data.</param>
+        /// <exception cref="T:System.ArgumentException"><paramref name="headerFields">headerFields</paramref> contains no elements.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="headerFields">headerFields</paramref> is null.</exception>
         public void SetCsvHeader(string[] headerFields)
         {
             if (headerFields == null)
@@ -168,6 +173,9 @@ namespace CsvToAvro
         /// </summary>
         /// <param name="header">An separated string containing the field names in the order in which the fields appear in the CSV data.</param>
         /// <param name="separator">The separator used in the supplied string. The default is comma (',').</param>
+        /// <exception cref="T:System.ArgumentException"><paramref name="header">header</paramref> is empty or contains only whitespace.</exception>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="header">header</paramref> is null.</exception>
+
         public void SetCsvHeader(string header, char separator = DEFAULT_SEPARATOR)
         {
             if (header == null)
@@ -404,7 +412,7 @@ namespace CsvToAvro
 
             if (fieldType == Schema.Type.Union)
             {
-                IList<Schema> types = ((UnionSchema)field.Schema).Schemas;
+                IList<Schema> types = ((UnionSchema) field.Schema).Schemas;
 
                 foreach (Schema schema in types)
                 {
@@ -429,7 +437,7 @@ namespace CsvToAvro
                 return false;
             }
 
-            IList<Schema> schemas = ((UnionSchema)field.Schema).Schemas;
+            IList<Schema> schemas = ((UnionSchema) field.Schema).Schemas;
 
             return schemas.Any(schema => schema.Tag == Schema.Type.Null);
         }
