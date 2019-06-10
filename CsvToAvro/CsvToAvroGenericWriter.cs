@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Avro;
 using Avro.File;
 using Avro.Generic;
 using NotVisualBasic.FileIO;
-
-[assembly: InternalsVisibleTo("CsvToAvro.Tests")]
 
 namespace CsvToAvro
 {
@@ -45,14 +41,7 @@ namespace CsvToAvro
         private static readonly Encoding DEFAULT_ENCODING = Encoding.UTF8;
         private static RecordSchema _avroSchema;
         private static DataFileWriter<GenericRecord> _dataFileWriter;
-        private static IFileSystem _fileSystem;
         private string[] _csvHeaderFields;
-
-        internal static IFileSystem FileSystemAbstract
-        {
-            private get { return _fileSystem ?? (_fileSystem = new FileSystem()); }
-            set { _fileSystem = value; }
-        }
 
         /// <summary>
         ///     Writes the Avro header metadata, closes the filestream, and cleans up resources.
@@ -71,11 +60,11 @@ namespace CsvToAvro
             {
                 case Mode.Overwrite:
                     _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(
-                        datumWriter, FileSystemAbstract.FileStream.Create(outputFilePath, FileMode.Create), codec);
+                        datumWriter, new FileStream(outputFilePath, FileMode.Create), codec);
                     break;
                 case Mode.Append:
                     _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(
-                        datumWriter, FileSystemAbstract.FileStream.Create(outputFilePath, FileMode.Append), codec);
+                        datumWriter, new FileStream(outputFilePath, FileMode.Append), codec);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode));
@@ -115,7 +104,7 @@ namespace CsvToAvro
         public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
             Encoding encoding, Mode mode = Mode.Overwrite)
         {
-            string jsonSchema = FileSystemAbstract.File.ReadAllText(schemaFilePath, encoding);
+            string jsonSchema = File.ReadAllText(schemaFilePath, encoding);
 
             return CreateFromJson(jsonSchema, outputFilePath, mode);
         }
