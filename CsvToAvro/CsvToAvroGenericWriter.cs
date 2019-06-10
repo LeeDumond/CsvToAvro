@@ -33,6 +33,9 @@ namespace CsvToAvro
         }
 
         private const char DEFAULT_SEPARATOR = ',';
+
+        private const string EMPTY_STRING_EXCEPTION_MESSAGE =
+            "Value cannot be an empty string, or contain only whitespace.";
         private static readonly Encoding DEFAULT_ENCODING = Encoding.UTF8;
         private static RecordSchema _avroSchema;
         private static DataFileWriter<GenericRecord> _dataFileWriter;
@@ -58,9 +61,14 @@ namespace CsvToAvro
                 throw new ArgumentNullException(nameof(outputFilePath));
             }
 
+            if (CheckInvalidPathCharacters(outputFilePath))
+            {
+                throw new ArgumentException("The path or file name contains one or more invalid characters.", nameof(outputFilePath));
+            }
+
             if (string.IsNullOrWhiteSpace(outputFilePath))
             {
-                throw new ArgumentException("Value cannot be an empty string, or contain only whitespace.", nameof(outputFilePath));
+                throw new ArgumentException(EMPTY_STRING_EXCEPTION_MESSAGE, nameof(outputFilePath));
             }
 
             DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
@@ -183,17 +191,25 @@ namespace CsvToAvro
                 throw new ArgumentNullException(nameof(schemaFilePath));
             }
 
-            
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
 
             if (string.IsNullOrWhiteSpace(schemaFilePath))
             {
                 throw new ArgumentException("Value cannot be an empty string, or contain only whitespace.", nameof(schemaFilePath));
             }
 
-            string jsonSchema = FileSystemAbstract.File.ReadAllText(schemaFilePath, encoding);
-            var schema = (RecordSchema) Schema.Parse(jsonSchema);
+            if (CheckInvalidPathCharacters(schemaFilePath))
+            {
+                throw new ArgumentException("The path or file name contains one or more invalid characters.", nameof(schemaFilePath));
+            }
 
-            return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
+            string jsonSchema = FileSystemAbstract.File.ReadAllText(schemaFilePath, encoding);
+            //string jsonSchema = File.ReadAllText(schemaFilePath, encoding);
+
+            return CreateFromJson(jsonSchema, outputFilePath, mode);
         }
 
         /// <summary>
@@ -242,11 +258,10 @@ namespace CsvToAvro
             //    throw new ArgumentNullException(nameof(jsonSchema));
             //}
 
-            //if (string.IsNullOrWhiteSpace(jsonSchema))
-            //{
-            //    throw new ArgumentException($"{nameof(jsonSchema)} is empty or contains only whitespace.",
-            //        nameof(jsonSchema));
-            //}
+            if (string.IsNullOrWhiteSpace(jsonSchema))
+            {
+                throw new ArgumentException(EMPTY_STRING_EXCEPTION_MESSAGE, nameof(jsonSchema));
+            }
 
             var schema = (RecordSchema) Schema.Parse(jsonSchema);
 
@@ -696,11 +711,6 @@ namespace CsvToAvro
             throw new InvalidOperationException($"Value of 'null' is not allowed for field '{field.Name}'.");
         }
 
-        private string GetParseExceptionMessage(string value, string fieldName, Type type)
-        {
-            return $"Value '{value}' of field '{fieldName}' could not be converted to a {type.FullName}.";
-        }
-
         private Schema.Type GetFieldType(Field field)
         {
             Schema.Type fieldType = field.Schema.Tag;
@@ -755,6 +765,30 @@ namespace CsvToAvro
             }
 
             return invalidNullFields;
+        }
+
+        private string GetParseExceptionMessage(string value, string fieldName, Type type)
+        {
+            return $"Value '{value}' of field '{fieldName}' could not be converted to a {type.FullName}.";
+        }
+
+        private static bool CheckInvalidPathCharacters(string path)
+        {
+            var fileName = Path.GetFileName(path);
+
+            if (fileName != null && fileName.ToCharArray().Any(c => Path.GetInvalidFileNameChars().Contains(c)))
+            {
+                return true;
+            }
+
+            var pathRoot = Path.GetDirectoryName(path);
+
+            if (pathRoot != null && pathRoot.ToCharArray().Any(c => Path.GetInvalidPathChars().Contains(c)))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
