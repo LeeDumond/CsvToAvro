@@ -245,12 +245,5 @@ namespace CsvToAvro.Tests
             Assert.Throws<ArgumentException>(action);
         }
 
-        [Fact]
-        public void ReadAllTextTest()
-        {
-            _writer = CsvToAvroGenericWriter.CreateFromPath(@"C:\mySchema.avsc", @"C:\test\myAvro.avro");
-
-            Assert.NotNull(_writer);
-        }
     }
 }
