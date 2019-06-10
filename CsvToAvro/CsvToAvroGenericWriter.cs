@@ -16,6 +16,15 @@ namespace CsvToAvro
 {
     public class CsvToAvroGenericWriter : IDisposable
     {
+        private CsvToAvroGenericWriter(RecordSchema schema, string outputFilePath, Mode mode)
+        {
+            _avroSchema = schema;
+            BuildDataFileWriter(outputFilePath, mode);
+        }
+
+        /// <summary>
+        ///     Indicates the behavior of a CsvToAvroGenericWriter when writing records to an Avro file.
+        /// </summary>
         public enum Mode
         {
             /// <summary>
@@ -33,20 +42,11 @@ namespace CsvToAvro
         }
 
         private const char DEFAULT_SEPARATOR = ',';
-
-        private const string EMPTY_STRING_EXCEPTION_MESSAGE =
-            "Value cannot be an empty string, or contain only whitespace.";
         private static readonly Encoding DEFAULT_ENCODING = Encoding.UTF8;
         private static RecordSchema _avroSchema;
         private static DataFileWriter<GenericRecord> _dataFileWriter;
-        private string[] _csvHeaderFields;
         private static IFileSystem _fileSystem;
-
-        private CsvToAvroGenericWriter(RecordSchema schema, string outputFilePath, Mode mode)
-        {
-            _avroSchema = schema;
-            BuildDataFileWriter(outputFilePath, mode);
-        }
+        private string[] _csvHeaderFields;
 
         internal static IFileSystem FileSystemAbstract
         {
@@ -54,35 +54,28 @@ namespace CsvToAvro
             set { _fileSystem = value; }
         }
 
+        /// <summary>
+        ///     Writes the Avro header metadata, closes the filestream, and cleans up resources.
+        /// </summary>
+        public void Dispose()
+        {
+            _dataFileWriter.Dispose();
+        }
+
         private static void BuildDataFileWriter(string outputFilePath, Mode mode)
         {
-            if (outputFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(outputFilePath));
-            }
-
-            if (CheckInvalidPathCharacters(outputFilePath))
-            {
-                throw new ArgumentException("The path or file name contains one or more invalid characters.", nameof(outputFilePath));
-            }
-
-            if (string.IsNullOrWhiteSpace(outputFilePath))
-            {
-                throw new ArgumentException(EMPTY_STRING_EXCEPTION_MESSAGE, nameof(outputFilePath));
-            }
-
             DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
             Codec codec = Codec.CreateCodec(Codec.Type.Deflate);
 
             switch (mode)
             {
                 case Mode.Overwrite:
-                    _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                        FileSystemAbstract.FileStream.Create(outputFilePath, FileMode.Create), codec);
+                    _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(
+                        datumWriter, FileSystemAbstract.FileStream.Create(outputFilePath, FileMode.Create), codec);
                     break;
                 case Mode.Append:
-                    _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(datumWriter,
-                        FileSystemAbstract.FileStream.Create(outputFilePath, FileMode.Append), codec);
+                    _dataFileWriter = (DataFileWriter<GenericRecord>) DataFileWriter<GenericRecord>.OpenWriter(
+                        datumWriter, FileSystemAbstract.FileStream.Create(outputFilePath, FileMode.Append), codec);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode));
@@ -102,38 +95,6 @@ namespace CsvToAvro
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="schemaFilePath">schemaFilePath</paramref> is an empty string (""),
-        ///     contains only white space, or contains one or more invalid characters.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="schemaFilePath">schemaFilePath</paramref> is null.</exception>
-        /// <exception cref="ArgumentException">
-        ///     The contents of the schema file is an empty string (""), or contains only white
-        ///     space.
-        /// </exception>
-        /// <exception cref="SchemaParseException">The contents of the schema file could not correctly converted into valid JSON.</exception>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""),
-        ///     contains only white space, or contains one or more invalid characters, or refers to a non-file device, such as
-        ///     "con:", "com1:", "lpt1:", etc. in an NTFS environment.
-        /// </exception>
-        /// <exception cref="NotSupportedException">
-        ///     <paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file
-        ///     device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
-        /// <exception cref="System.Security.SecurityException">The caller does not have the required permission.</exception>
-        /// <exception cref="IOException">
-        ///     An I/O error has occured while opening the source file, or the underlying stream has been
-        ///     unexpectedly closed.
-        /// </exception>
-        /// <exception cref="DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
-        /// <exception cref="PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length.
-        ///     For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than
-        ///     260 characters.
-        /// </exception>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="mode">mode</paramref> contains an invalid value.</exception>
         public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
@@ -151,63 +112,10 @@ namespace CsvToAvro
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="schemaFilePath">schemaFilePath</paramref> is an empty string (""),
-        ///     contains only white space, or contains one or more invalid characters.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="schemaFilePath">schemaFilePath</paramref> is null.</exception>
-        /// <exception cref="ArgumentException">
-        ///     The contents of the schema file is an empty string (""), or contains only white
-        ///     space.
-        /// </exception>
-        /// <exception cref="SchemaParseException">The contents of the schema file could not correctly converted into valid JSON.</exception>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""),
-        ///     contains only white space, or contains one or more invalid characters, or refers to a non-file device, such as
-        ///     "con:", "com1:", "lpt1:", etc. in an NTFS environment.
-        /// </exception>
-        /// <exception cref="NotSupportedException">
-        ///     <paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file
-        ///     device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
-        /// <exception cref="System.Security.SecurityException">The caller does not have the required permission.</exception>
-        /// <exception cref="IOException">
-        ///     An I/O error has occured while opening the source file, or the underlying stream has been
-        ///     unexpectedly closed.
-        /// </exception>
-        /// <exception cref="DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
-        /// <exception cref="PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length.
-        ///     For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than
-        ///     260 characters.
-        /// </exception>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="mode">mode</paramref> contains an invalid value.</exception>
         public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
             Encoding encoding, Mode mode = Mode.Overwrite)
         {
-            if (schemaFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(schemaFilePath));
-            }
-
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
-            if (string.IsNullOrWhiteSpace(schemaFilePath))
-            {
-                throw new ArgumentException("Value cannot be an empty string, or contain only whitespace.", nameof(schemaFilePath));
-            }
-
-            if (CheckInvalidPathCharacters(schemaFilePath))
-            {
-                throw new ArgumentException("The path or file name contains one or more invalid characters.", nameof(schemaFilePath));
-            }
-
             string jsonSchema = FileSystemAbstract.File.ReadAllText(schemaFilePath, encoding);
-            //string jsonSchema = File.ReadAllText(schemaFilePath, encoding);
 
             return CreateFromJson(jsonSchema, outputFilePath, mode);
         }
@@ -222,47 +130,9 @@ namespace CsvToAvro
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="jsonSchema">jsonSchema</paramref> is an empty string (""), or
-        ///     contains only white space.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="jsonSchema">jsonSchema</paramref> is null.</exception>
-        /// <exception cref="SchemaParseException">
-        ///     <paramref name="jsonSchema">jsonSchema</paramref> could not correctly converted
-        ///     into valid JSON.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""),
-        ///     contains only white space, or contains one or more invalid characters, or refers to a non-file device, such as
-        ///     "con:", "com1:", "lpt1:", etc. in an NTFS environment.
-        /// </exception>
-        /// <exception cref="NotSupportedException">
-        ///     <paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file
-        ///     device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
-        /// <exception cref="System.Security.SecurityException">The caller does not have the required permission.</exception>
-        /// <exception cref="IOException">An I/O error, usually meaning the underlying stream has been unexpectedly closed.</exception>
-        /// <exception cref="DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
-        /// <exception cref="PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length.
-        ///     For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than
-        ///     260 characters.
-        /// </exception>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="mode">mode</paramref> contains an invalid value.</exception>
         public static CsvToAvroGenericWriter CreateFromJson(string jsonSchema, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
-            //if (jsonSchema == null)
-            //{
-            //    throw new ArgumentNullException(nameof(jsonSchema));
-            //}
-
-            if (string.IsNullOrWhiteSpace(jsonSchema))
-            {
-                throw new ArgumentException(EMPTY_STRING_EXCEPTION_MESSAGE, nameof(jsonSchema));
-            }
-
             var schema = (RecordSchema) Schema.Parse(jsonSchema);
 
             return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
@@ -278,50 +148,10 @@ namespace CsvToAvro
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="outputFilePath">outputFilePath</paramref> is an empty string (""),
-        ///     contains only white space, or contains one or more invalid characters; or refers to a non-file device, such as
-        ///     "con:", "com1:", "lpt1:", etc. in an NTFS environment.
-        /// </exception>
-        /// <exception cref="NotSupportedException">
-        ///     <paramref name="outputFilePath">outputFilePath</paramref> refers to a non-file
-        ///     device, such as "con:", "com1:", "lpt1:", etc. in a non-NTFS environment.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="outputFilePath">outputFilePath</paramref> is null.</exception>
-        /// <exception cref="System.Security.SecurityException">The caller does not have the required permission.</exception>
-        /// <exception cref="IOException">An I/O error, usually meaning the underlying stream has been unexpectedly closed.</exception>
-        /// <exception cref="DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
-        /// <exception cref="PathTooLongException">
-        ///     The specified path, file name, or both exceed the system-defined maximum length.
-        ///     For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than
-        ///     260 characters.
-        /// </exception>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="mode">mode</paramref> contains an invalid value.</exception>
         public static CsvToAvroGenericWriter CreateFromSchema(RecordSchema schema, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
             return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
-        }
-
-        /// <summary>
-        ///     Sets the list of CSV headers.
-        /// </summary>
-        /// <param name="headerFields">An array containing the field names in the order in which the fields appear in the CSV data.</param>
-        /// <exception cref="ArgumentException"><paramref name="headerFields">headerFields</paramref> contains no elements.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="headerFields">headerFields</paramref> is null.</exception>
-        public void SetCsvHeader(string[] headerFields)
-        {
-            //if (headerFields == null)
-            //{
-            //    throw new ArgumentNullException(nameof(headerFields));
-            //}
-
-            //if (headerFields.Length == 0)
-            //{
-            //    throw new ArgumentException($"{nameof(headerFields)} has no elements.", nameof(headerFields));
-            //}
-
-            _csvHeaderFields = headerFields;
         }
 
         /// <summary>
@@ -332,24 +162,42 @@ namespace CsvToAvro
         ///     data.
         /// </param>
         /// <param name="separator">The separator used in the supplied string. The default is comma (',').</param>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="header">header</paramref> is an empty string (""), or contains only
-        ///     whitespace.
-        /// </exception>
+        /// <exception cref="ArgumentException"><paramref name="header">header</paramref> an empty string, or contains only whitespace.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="header">header</paramref> is null.</exception>
         public void SetCsvHeader(string header, char separator = DEFAULT_SEPARATOR)
         {
-            //if (header == null)
-            //{
-            //    throw new ArgumentNullException(nameof(header));
-            //}
+            if (header == null)
+            {
+                throw new ArgumentNullException(nameof(header));
+            }
 
-            //if (string.IsNullOrWhiteSpace(header))
-            //{
-            //    throw new ArgumentException($"{nameof(header)} is empty or contains only whitespace.", nameof(header));
-            //}
+            if (string.IsNullOrWhiteSpace(header))
+            {
+                throw new ArgumentException("Value cannot be empty or whitespace.", nameof(header));
+            }
 
-            _csvHeaderFields = header.Split(separator);
+            SetCsvHeader(header.Split(separator));
+        }
+
+        /// <summary>
+        ///     Sets the list of CSV headers.
+        /// </summary>
+        /// <param name="headerFields">An array containing the field names in the order in which the fields appear in the CSV data.</param>
+        /// <exception cref="ArgumentException"><paramref name="headerFields">headerFields</paramref> contains no elements.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="headerFields">headerFields</paramref> is null.</exception>
+        public void SetCsvHeader(string[] headerFields)
+        {
+            if (headerFields == null)
+            {
+                throw new ArgumentNullException(nameof(headerFields));
+            }
+
+            if (headerFields.Length == 0)
+            {
+                throw new ArgumentException("Value cannot be an empty collection.", nameof(headerFields));
+            }
+
+            _csvHeaderFields = headerFields;
         }
 
         /// <summary>
@@ -363,15 +211,6 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
         /// <param name="separator">The separator used by the supplied CSV data. The default is comma (',').</param>
         /// <returns>The number of lines processed from the supplied file.</returns>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="csvFilePath">csvFilePath</paramref> is an empty string (""), or
-        ///     contains only whitespace.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="csvFilePath">csvFilePath</paramref> is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        ///     <paramref name="headerLinesToSkip">headerLinesToSkip</paramref> is less
-        ///     than zero.
-        /// </exception>
         public int ConvertFromCsv(string csvFilePath, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
             return ConvertFromCsv(csvFilePath, DEFAULT_ENCODING, headerLinesToSkip, separator);
@@ -386,41 +225,9 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
         /// <param name="separator">The separator used by the supplied CSV data. The default is comma (',').</param>
         /// <returns>The number of lines processed from the supplied file.</returns>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="csvFilePath">csvFilePath</paramref> is an empty string (""), or
-        ///     contains only whitespace.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="csvFilePath">csvFilePath</paramref> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="encoding">encoding</paramref> is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        ///     <paramref name="headerLinesToSkip">headerLinesToSkip</paramref> is less
-        ///     than zero.
-        /// </exception>
         public int ConvertFromCsv(string csvFilePath, Encoding encoding, int headerLinesToSkip = 0,
             char separator = DEFAULT_SEPARATOR)
         {
-            //if (csvFilePath == null)
-            //{
-            //    throw new ArgumentNullException(nameof(csvFilePath));
-            //}
-
-            //if (encoding == null)
-            //{
-            //    throw new ArgumentNullException(nameof(encoding));
-            //}
-
-            //if (string.IsNullOrWhiteSpace(csvFilePath))
-            //{
-            //    throw new ArgumentException($"{nameof(csvFilePath)} is empty or contains only whitespace.",
-            //        nameof(csvFilePath));
-            //}
-
-            //if (headerLinesToSkip < 0)
-            //{
-            //    throw new ArgumentOutOfRangeException(nameof(headerLinesToSkip),
-            //        $"{nameof(headerLinesToSkip)} must be greater than zero.");
-            //}
-
             return ConvertFromCsv(new CsvTextFieldParser(csvFilePath, encoding), headerLinesToSkip, separator);
         }
 
@@ -432,11 +239,6 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
         /// <param name="separator">The separator used by the supplied CSV data. The default is comma (',').</param>
         /// <returns>The number of lines processed from the supplied file.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="stream">stream</paramref> is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        ///     <paramref name="headerLinesToSkip">headerLinesToSkip</paramref> is less
-        ///     than zero.
-        /// </exception>
         public int ConvertFromCsv(Stream stream, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
             return ConvertFromCsv(stream, DEFAULT_ENCODING, headerLinesToSkip, separator);
@@ -451,31 +253,9 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
         /// <param name="separator">The separator used by the supplied CSV data. The default is comma (',').</param>
         /// <returns>The number of lines processed from the supplied file.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="stream">stream</paramref> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="encoding">encoding</paramref> is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        ///     <paramref name="headerLinesToSkip">headerLinesToSkip</paramref> is less
-        ///     than zero.
-        /// </exception>
         public int ConvertFromCsv(Stream stream, Encoding encoding, int headerLinesToSkip = 0,
             char separator = DEFAULT_SEPARATOR)
         {
-            //if (stream == null)
-            //{
-            //    throw new ArgumentNullException(nameof(stream));
-            //}
-
-            //if (encoding == null)
-            //{
-            //    throw new ArgumentNullException(nameof(encoding));
-            //}
-
-            //if (headerLinesToSkip < 0)
-            //{
-            //    throw new ArgumentOutOfRangeException(nameof(headerLinesToSkip),
-            //        $"{nameof(headerLinesToSkip)} must be greater than zero.");
-            //}
-
             return ConvertFromCsv(new CsvTextFieldParser(stream, encoding), headerLinesToSkip, separator);
         }
 
@@ -487,24 +267,8 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file.</param>
         /// <param name="separator">The separator used by the supplied CSV data.</param>
         /// <returns>The number of lines processed from the supplied TextReader.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="reader">reader</paramref> is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        ///     <paramref name="headerLinesToSkip">headerLinesToSkip</paramref> is less
-        ///     than zero.
-        /// </exception>
         public int ConvertFromCsv(TextReader reader, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
-            //if (reader == null)
-            //{
-            //    throw new ArgumentNullException(nameof(reader));
-            //}
-
-            //if (headerLinesToSkip < 0)
-            //{
-            //    throw new ArgumentOutOfRangeException(nameof(headerLinesToSkip),
-            //        $"{nameof(headerLinesToSkip)} must be greater than zero.");
-            //}
-
             return ConvertFromCsv(new CsvTextFieldParser(reader), headerLinesToSkip, separator);
         }
 
@@ -542,27 +306,15 @@ namespace CsvToAvro
         ///     Appends data to the end of the Avro file currently being written to.
         /// </summary>
         /// <param name="fields">An array of strings containing the data to be appended.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="fields">fields</paramref> is null.</exception>
-        /// <exception cref="ArgumentException"><paramref name="fields">fields</paramref> contains no elements.</exception>
         public void Append(string[] fields)
         {
-            //if (fields == null)
-            //{
-            //    throw new ArgumentNullException(nameof(fields));
-            //}
-
-            //if (fields.Length == 0)
-            //{
-            //    throw new ArgumentException($"{nameof(fields)} has no elements.", nameof(fields));
-            //}
-
             GenericRecord record = GetGenericRecord(fields);
 
             IEnumerable<Field> invalidNullFields = GetInvalidNullFields(record);
 
             if (invalidNullFields.Any())
             {
-                throw new Exception(
+                throw new NotSupportedException(
                     $"There are fields with null, values but the schema does not allow for null: {string.Join(", ", invalidNullFields)}.");
             }
 
@@ -578,23 +330,8 @@ namespace CsvToAvro
         ///     If your line data has quoted values, newlines, escaped quotes, etc. you should use the other Append method.
         /// </param>
         /// <param name="separator">The separator used in the supplied string. The default is comma (',').</param>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="line">line</paramref> is an empty string (""), or contains only
-        ///     whitespace.
-        /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="line">line</paramref> is null.</exception>
         public void Append(string line, char separator = DEFAULT_SEPARATOR)
         {
-            //if (line == null)
-            //{
-            //    throw new ArgumentNullException(nameof(line));
-            //}
-
-            //if (string.IsNullOrWhiteSpace(line))
-            //{
-            //    throw new ArgumentException($"{nameof(line)} is empty, or contains only whitespace.", nameof(line));
-            //}
-
             Append(line.Split(separator));
         }
 
@@ -772,25 +509,6 @@ namespace CsvToAvro
             return $"Value '{value}' of field '{fieldName}' could not be converted to a {type.FullName}.";
         }
 
-        private static bool CheckInvalidPathCharacters(string path)
-        {
-            var fileName = Path.GetFileName(path);
-
-            if (fileName != null && fileName.ToCharArray().Any(c => Path.GetInvalidFileNameChars().Contains(c)))
-            {
-                return true;
-            }
-
-            var pathRoot = Path.GetDirectoryName(path);
-
-            if (pathRoot != null && pathRoot.ToCharArray().Any(c => Path.GetInvalidPathChars().Contains(c)))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
         /// <summary>
         ///     Writes the Avro header metadata, closes the filestream, and cleans up resources.
         /// </summary>
@@ -798,14 +516,6 @@ namespace CsvToAvro
         public void CloseWriter()
         {
             _dataFileWriter.Close();
-        }
-
-        /// <summary>
-        ///     Writes the Avro header metadata, closes the filestream, and cleans up resources.
-        /// </summary>
-        public void Dispose()
-        {
-            _dataFileWriter.Dispose();
         }
     }
 }
