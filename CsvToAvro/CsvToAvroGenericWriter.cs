@@ -135,7 +135,7 @@ namespace CsvToAvro
         {
             var schema = (RecordSchema) Schema.Parse(jsonSchema);
 
-            return new CsvToAvroGenericWriter(schema, outputFilePath, mode);
+            return CreateFromSchema(schema, outputFilePath, mode);
         }
 
         /// <summary>
