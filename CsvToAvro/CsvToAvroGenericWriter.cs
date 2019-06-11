@@ -295,6 +295,9 @@ namespace CsvToAvro
         ///     Appends data to the end of the Avro file currently being written to.
         /// </summary>
         /// <param name="fields">An array of strings containing the data to be appended.</param>
+        /// <exception cref="InvalidOperationException">Thrown when some fields have null values that are not allowed by the schema.</exception>
+        /// <exception cref="FormatException">Thrown when a field value cannot be converted to the data type for that field in the schema.</exception>
+        /// <exception cref="NotSupportedException">Thrown when a particular data type is not supported for a field in the schema.</exception>
         public void Append(string[] fields)
         {
             GenericRecord record = GetGenericRecord(fields);
@@ -303,7 +306,7 @@ namespace CsvToAvro
 
             if (invalidNullFields.Any())
             {
-                throw new NotSupportedException(
+                throw new InvalidOperationException(
                     $"There are fields with null, values but the schema does not allow for null: {string.Join(", ", invalidNullFields)}.");
             }
 
@@ -319,8 +322,20 @@ namespace CsvToAvro
         ///     If your line data has quoted values, newlines, escaped quotes, etc. you should use the other Append method.
         /// </param>
         /// <param name="separator">The separator used in the supplied string. The default is comma (',').</param>
+        /// <exception cref="ArgumentException"><paramref name="line">line</paramref> an empty string, or contains only whitespace.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="line">line</paramref> is null.</exception>
         public void Append(string line, char separator = DEFAULT_SEPARATOR)
         {
+            if (line == null)
+            {
+                throw new ArgumentNullException(nameof(line));
+            }
+
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                throw new ArgumentException("Value cannot be empty or whitespace.", nameof(line));
+            }
+
             Append(line.Split(separator));
         }
 
@@ -374,8 +389,8 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(
-                                GetParseExceptionMessage(value, field.Name, typeof(int)));
+                            throw new FormatException(
+                                GetParseExceptionMessage(value, field.Name, typeof(int)), ex);
                         }
 
                     case Schema.Type.Long:
@@ -385,8 +400,8 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name,
-                                typeof(long)));
+                            throw new FormatException(GetParseExceptionMessage(value, field.Name,
+                                typeof(long)), ex);
                         }
 
                     case Schema.Type.Float:
@@ -396,8 +411,8 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name,
-                                typeof(float)));
+                            throw new FormatException(GetParseExceptionMessage(value, field.Name,
+                                typeof(float)), ex);
                         }
 
                     case Schema.Type.Double:
@@ -407,8 +422,8 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name,
-                                typeof(double)));
+                            throw new FormatException(GetParseExceptionMessage(value, field.Name,
+                                typeof(double)), ex);
                         }
 
                     case Schema.Type.Boolean:
@@ -418,8 +433,8 @@ namespace CsvToAvro
                         }
                         catch (Exception ex) when (ex is FormatException || ex is OverflowException)
                         {
-                            throw new InvalidOperationException(GetParseExceptionMessage(value, field.Name,
-                                typeof(bool)));
+                            throw new FormatException(GetParseExceptionMessage(value, field.Name,
+                                typeof(bool)), ex);
                         }
 
                     case Schema.Type.String:
