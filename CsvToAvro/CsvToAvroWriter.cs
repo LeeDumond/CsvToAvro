@@ -11,7 +11,7 @@ using NotVisualBasic.FileIO;
 namespace CsvToAvro
 {
     /// <summary>
-    /// A utility to convert CSV data to AVRO files, using an Avro.Specific.SpecificRecord.
+    /// A utility to convert CSV data to AVRO files, using an existing record of type <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">A type that implements ISpecificRecord</typeparam>
     public class CsvToAvroWriter<T> where T : ISpecificRecord, IDisposable
@@ -43,7 +43,6 @@ namespace CsvToAvro
         }
 
         private const char DEFAULT_SEPARATOR = ',';
-        private static readonly Encoding DEFAULT_ENCODING = Encoding.UTF8;
         private static RecordSchema _avroSchema;
         private static DataFileWriter<T> _dataFileWriter;
         private string[] _csvHeaderFields;
@@ -105,7 +104,7 @@ namespace CsvToAvro
         public static CsvToAvroWriter<T> CreateFromPath(string schemaFilePath, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
-            return CreateFromPath(schemaFilePath, outputFilePath, DEFAULT_ENCODING, mode);
+            return CreateFromPath(schemaFilePath, outputFilePath, Encoding.UTF8, mode);
         }
 
         /// <summary>
@@ -220,7 +219,7 @@ namespace CsvToAvro
         /// <returns>The number of lines processed from the supplied file.</returns>
         public int ConvertFromCsv(T record, string csvFilePath, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
-            return ConvertFromCsv(record, csvFilePath, DEFAULT_ENCODING, headerLinesToSkip, separator);
+            return ConvertFromCsv(record, csvFilePath, Encoding.UTF8, headerLinesToSkip, separator);
         }
 
         /// <summary>
@@ -248,7 +247,7 @@ namespace CsvToAvro
         /// <returns>The number of lines processed from the supplied file.</returns>
         public int ConvertFromCsv(T record, Stream stream, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
-            return ConvertFromCsv(record, stream, DEFAULT_ENCODING, headerLinesToSkip, separator);
+            return ConvertFromCsv(record, stream, Encoding.UTF8, headerLinesToSkip, separator);
         }
 
         /// <summary>

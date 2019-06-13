@@ -41,7 +41,6 @@ namespace CsvToAvro
         }
 
         private const char DEFAULT_SEPARATOR = ',';
-        private static readonly Encoding DEFAULT_ENCODING = Encoding.UTF8;
         private static RecordSchema _avroSchema;
         private static DataFileWriter<GenericRecord> _dataFileWriter;
         private string[] _csvHeaderFields;
@@ -90,7 +89,7 @@ namespace CsvToAvro
         public static CsvToAvroGenericWriter CreateFromPath(string schemaFilePath, string outputFilePath,
             Mode mode = Mode.Overwrite)
         {
-            return CreateFromPath(schemaFilePath, outputFilePath, DEFAULT_ENCODING, mode);
+            return CreateFromPath(schemaFilePath, outputFilePath, Encoding.UTF8, mode);
         }
 
         /// <summary>
@@ -205,7 +204,7 @@ namespace CsvToAvro
         /// <returns>The number of lines processed from the supplied file.</returns>
         public int ConvertFromCsv(string csvFilePath, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
-            return ConvertFromCsv(csvFilePath, DEFAULT_ENCODING, headerLinesToSkip, separator);
+            return ConvertFromCsv(csvFilePath, Encoding.UTF8, headerLinesToSkip, separator);
         }
 
         /// <summary>
@@ -233,7 +232,7 @@ namespace CsvToAvro
         /// <returns>The number of lines processed from the supplied file.</returns>
         public int ConvertFromCsv(Stream stream, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
-            return ConvertFromCsv(stream, DEFAULT_ENCODING, headerLinesToSkip, separator);
+            return ConvertFromCsv(stream, Encoding.UTF8, headerLinesToSkip, separator);
         }
 
         /// <summary>
