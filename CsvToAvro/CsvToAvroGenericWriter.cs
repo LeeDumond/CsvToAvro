@@ -10,6 +10,9 @@ using NotVisualBasic.FileIO;
 
 namespace CsvToAvro
 {
+    /// <summary>
+    /// A utility to convert CSV data to AVRO files.
+    /// </summary>
     public class CsvToAvroGenericWriter : IDisposable
     {
         private CsvToAvroGenericWriter(RecordSchema schema, string outputFilePath, Mode mode)
@@ -53,7 +56,7 @@ namespace CsvToAvro
 
         private static void BuildDataFileWriter(string outputFilePath, Mode mode)
         {
-            DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
+            GenericDatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(_avroSchema);
             Codec codec = Codec.CreateCodec(Codec.Type.Deflate);
 
             switch (mode)

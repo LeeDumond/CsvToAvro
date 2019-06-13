@@ -5,12 +5,15 @@ using System.Linq;
 using System.Text;
 using Avro;
 using Avro.File;
-using Avro.Generic;
 using Avro.Specific;
 using NotVisualBasic.FileIO;
 
 namespace CsvToAvro
 {
+    /// <summary>
+    /// A utility to convert CSV data to AVRO files, using an Avro.Specific.SpecificRecord.
+    /// </summary>
+    /// <typeparam name="T">A type that implements ISpecificRecord</typeparam>
     public class CsvToAvroWriter<T> where T : ISpecificRecord, IDisposable
     {
         private CsvToAvroWriter(RecordSchema schema, string outputFilePath, Mode mode)
@@ -56,7 +59,7 @@ namespace CsvToAvro
 
         private static void BuildDataFileWriter(string outputFilePath, Mode mode)
         {
-            DatumWriter<T> datumWriter = new SpecificDatumWriter<T>(_avroSchema);
+            var datumWriter = new SpecificDatumWriter<T>(_avroSchema);
             Codec codec = Codec.CreateCodec(Codec.Type.Deflate);
 
             switch (mode)
@@ -215,9 +218,9 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
         /// <param name="separator">The separator used by the supplied CSV data. The default is comma (',').</param>
         /// <returns>The number of lines processed from the supplied file.</returns>
-        public int ConvertFromCsv(string csvFilePath, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
+        public int ConvertFromCsv(T record, string csvFilePath, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
-            return ConvertFromCsv(csvFilePath, DEFAULT_ENCODING, headerLinesToSkip, separator);
+            return ConvertFromCsv(record, csvFilePath, DEFAULT_ENCODING, headerLinesToSkip, separator);
         }
 
         /// <summary>
@@ -229,10 +232,10 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
         /// <param name="separator">The separator used by the supplied CSV data. The default is comma (',').</param>
         /// <returns>The number of lines processed from the supplied file.</returns>
-        public int ConvertFromCsv(string csvFilePath, Encoding encoding, int headerLinesToSkip = 0,
+        public int ConvertFromCsv(T record, string csvFilePath, Encoding encoding, int headerLinesToSkip = 0,
             char separator = DEFAULT_SEPARATOR)
         {
-            return ConvertFromCsv(new CsvTextFieldParser(csvFilePath, encoding), headerLinesToSkip, separator);
+            return ConvertFromCsv(record, new CsvTextFieldParser(csvFilePath, encoding), headerLinesToSkip, separator);
         }
 
         /// <summary>
@@ -243,9 +246,9 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
         /// <param name="separator">The separator used by the supplied CSV data. The default is comma (',').</param>
         /// <returns>The number of lines processed from the supplied file.</returns>
-        public int ConvertFromCsv(Stream stream, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
+        public int ConvertFromCsv(T record, Stream stream, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
-            return ConvertFromCsv(stream, DEFAULT_ENCODING, headerLinesToSkip, separator);
+            return ConvertFromCsv(record, stream, DEFAULT_ENCODING, headerLinesToSkip, separator);
         }
 
         /// <summary>
@@ -257,10 +260,10 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
         /// <param name="separator">The separator used by the supplied CSV data. The default is comma (',').</param>
         /// <returns>The number of lines processed from the supplied file.</returns>
-        public int ConvertFromCsv(Stream stream, Encoding encoding, int headerLinesToSkip = 0,
+        public int ConvertFromCsv(T record, Stream stream, Encoding encoding, int headerLinesToSkip = 0,
             char separator = DEFAULT_SEPARATOR)
         {
-            return ConvertFromCsv(new CsvTextFieldParser(stream, encoding), headerLinesToSkip, separator);
+            return ConvertFromCsv(record, new CsvTextFieldParser(stream, encoding), headerLinesToSkip, separator);
         }
 
         /// <summary>
@@ -271,12 +274,12 @@ namespace CsvToAvro
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file.</param>
         /// <param name="separator">The separator used by the supplied CSV data.</param>
         /// <returns>The number of lines processed from the supplied TextReader.</returns>
-        public int ConvertFromCsv(TextReader reader, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
+        public int ConvertFromCsv(T record, TextReader reader, int headerLinesToSkip = 0, char separator = DEFAULT_SEPARATOR)
         {
-            return ConvertFromCsv(new CsvTextFieldParser(reader), headerLinesToSkip, separator);
+            return ConvertFromCsv(record, new CsvTextFieldParser(reader), headerLinesToSkip, separator);
         }
 
-        private int ConvertFromCsv(CsvTextFieldParser parser, int headerLinesToSkip, char separator)
+        private int ConvertFromCsv(T record, CsvTextFieldParser parser, int headerLinesToSkip, char separator)
         {
             var counter = 0;
 
@@ -296,7 +299,7 @@ namespace CsvToAvro
                 while (!parser.EndOfData)
                 {
                     string[] csvValues = parser.ReadFields();
-                    Append(csvValues);
+                    Append(record, csvValues);
                     counter++;
                 }
             }
@@ -339,7 +342,7 @@ namespace CsvToAvro
         /// <param name="separator">The separator used in the supplied string. The default is comma (',').</param>
         /// <exception cref="ArgumentException"><paramref name="line">line</paramref> an empty string, or contains only whitespace.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="line">line</paramref> is null.</exception>
-        public void Append(string line, char separator = DEFAULT_SEPARATOR)
+        public void Append(T record, string line, char separator = DEFAULT_SEPARATOR)
         {
             if (line == null)
             {
@@ -351,10 +354,10 @@ namespace CsvToAvro
                 throw new ArgumentException("Value cannot be empty or whitespace.", nameof(line));
             }
 
-            Append(line.Split(separator));
+            Append(record, line.Split(separator));
         }
 
-        private T PopulateRecord(T record, string[] fields)
+        private void PopulateRecord(T record, string[] fields)
         {
             if (_csvHeaderFields != null)
             {
@@ -389,8 +392,6 @@ namespace CsvToAvro
                     record.Put(i, obj);
                 }
             }
-
-            return record;
         }
 
         private object GetObject(Field field, string value)
@@ -507,7 +508,7 @@ namespace CsvToAvro
             return schemas.Any(schema => schema.Tag == Schema.Type.Null);
         }
 
-        private List<Field> GetInvalidNullFields(GenericRecord record)
+        private List<Field> GetInvalidNullFields(T record)
         {
             List<Field> avroFields = _avroSchema.Fields;
 
@@ -515,12 +516,11 @@ namespace CsvToAvro
 
             foreach (Field field in avroFields)
             {
-                if (record.TryGetValue(field.Name, out object value))
+                object value = record.Get(field.Pos);
+
+                if (value == null && !FieldAllowsNull(field))
                 {
-                    if (value == null && !FieldAllowsNull(field))
-                    {
-                        invalidNullFields.Add(field);
-                    }
+                    invalidNullFields.Add(field);
                 }
             }
 
