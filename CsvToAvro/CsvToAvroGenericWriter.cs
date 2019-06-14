@@ -82,7 +82,7 @@ namespace CsvToAvro
         /// </param>
         /// <param name="outputFilePath">The path the Avro file should be written to.</param>
         /// <param name="mode">
-        ///     If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        ///     If the output Avro file already exists, specifies whether it should be overwritten or appended to.
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
@@ -99,7 +99,7 @@ namespace CsvToAvro
         /// <param name="outputFilePath">The path the Avro file should be written to.</param>
         /// <param name="encoding">The encoding used for the file containing the Avro schema.</param>
         /// <param name="mode">
-        ///     If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        ///     If the output Avro file already exists, specifies whether it should be overwritten or appended to.
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
@@ -117,7 +117,7 @@ namespace CsvToAvro
         /// <param name="jsonSchema">A string containing the schema as properly formatted JSON.</param>
         /// <param name="outputFilePath">The path the Avro file should be written to.</param>
         /// <param name="mode">
-        ///     If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        ///     If the output Avro file already exists, specifies whether it should be overwritten or appended to.
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
@@ -135,7 +135,7 @@ namespace CsvToAvro
         /// <param name="schema">An Avro RecordSchema object containing the schema.</param>
         /// <param name="outputFilePath">The path the Avro file should be written to.</param>
         /// <param name="mode">
-        ///     If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        ///     If the output Avro file already exists, specifies whether it should be overwritten or appended to.
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>

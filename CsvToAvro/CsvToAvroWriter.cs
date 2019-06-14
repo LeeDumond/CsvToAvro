@@ -97,7 +97,7 @@ namespace CsvToAvro
         /// </param>
         /// <param name="outputFilePath">The path the Avro file should be written to.</param>
         /// <param name="mode">
-        ///     If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        ///     If the output Avro file already exists, specifies whether it should be overwritten or appended to.
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
@@ -114,7 +114,7 @@ namespace CsvToAvro
         /// <param name="outputFilePath">The path the Avro file should be written to.</param>
         /// <param name="encoding">The encoding used for the file containing the Avro schema.</param>
         /// <param name="mode">
-        ///     If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        ///     If the output Avro file already exists, specifies whether it should be overwritten or appended to.
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
@@ -132,7 +132,7 @@ namespace CsvToAvro
         /// <param name="jsonSchema">A string containing the schema as properly formatted JSON.</param>
         /// <param name="outputFilePath">The path the Avro file should be written to.</param>
         /// <param name="mode">
-        ///     If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        ///     If the output Avro file already exists, specifies whether it should be overwritten or appended to.
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
@@ -150,7 +150,7 @@ namespace CsvToAvro
         /// <param name="schema">An Avro RecordSchema object containing the schema.</param>
         /// <param name="outputFilePath">The path the Avro file should be written to.</param>
         /// <param name="mode">
-        ///     If the output Avro file already exists, specified whether it should be overwritten or appended to.
+        ///     If the output Avro file already exists, specifies whether it should be overwritten or appended to.
         ///     The default is Overwrite.
         /// </param>
         /// <returns>A CsvToAvroGenericWriter object.</returns>
@@ -210,7 +210,7 @@ namespace CsvToAvro
         ///     Converts a CSV file to a file in Avro format, using the schema, output path, and mode specified by the writer.
         ///     NOTE: This method closes the writer once execution is complete.
         /// </summary>
-        /// <param name="record">A record of a type that that implements ISpecificRecord.</param>
+        /// <param name="record">A record of a type that implements ISpecificRecord.</param>
         /// <param name="csvFilePath">
         ///     The path to a text file containing the CSV data. This overload assumes UTF8 encoding for the
         ///     file.
@@ -227,7 +227,7 @@ namespace CsvToAvro
         ///     Converts a CSV file to a file in Avro format, using the schema, output path, and mode specified by the writer.
         ///     NOTE: This method closes the writer once execution is complete.
         /// </summary>
-        /// <param name="record">A record of a type that that implements ISpecificRecord.</param>
+        /// <param name="record">A record of a type that implements ISpecificRecord.</param>
         /// <param name="csvFilePath">The path to a text file containing the CSV data.</param>
         /// <param name="encoding">The encoding used for the file containing the CSV data.</param>
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
@@ -243,7 +243,7 @@ namespace CsvToAvro
         ///     Converts a CSV file to a file in Avro format, using the schema, output path, and mode specified by the writer.
         ///     NOTE: This method closes the writer once execution is complete.
         /// </summary>
-        /// <param name="record">A record of a type that that implements ISpecificRecord.</param>
+        /// <param name="record">A record of a type that implements ISpecificRecord.</param>
         /// <param name="stream">A stream containing the CSV data. This overload assumes UTF8 encoding for the stream.</param>
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
         /// <param name="separator">The separator used by the supplied CSV data. The default is comma (',').</param>
@@ -257,7 +257,7 @@ namespace CsvToAvro
         ///     Converts a CSV file to a file in Avro format, using the schema, output path, and mode specified by the writer.
         ///     NOTE: This method closes the writer once execution is complete.
         /// </summary>
-        /// <param name="record">A record of a type that that implements ISpecificRecord.</param>
+        /// <param name="record">A record of a type that implements ISpecificRecord.</param>
         /// <param name="stream">A stream containing the CSV data.</param>
         /// <param name="encoding">The encoding used for the stream containing the CSV data.</param>
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file. The default is 0.</param>
@@ -273,7 +273,7 @@ namespace CsvToAvro
         ///     Converts a CSV file to a file in Avro format, using the schema, output path, and mode specified by the writer.
         ///     NOTE: This method closes the writer once execution is complete.
         /// </summary>
-        /// <param name="record">A record of a type that that implements ISpecificRecord.</param>
+        /// <param name="record">A record of a type that implements ISpecificRecord.</param>
         /// <param name="reader">A TextReader containing the CSV data.</param>
         /// <param name="headerLinesToSkip">The number of lines to skip from the beginning of the CSV file.</param>
         /// <param name="separator">The separator used by the supplied CSV data.</param>
@@ -316,7 +316,7 @@ namespace CsvToAvro
         /// <summary>
         ///     Appends data to the end of the Avro file currently being written to.
         /// </summary>
-        /// <param name="record">A record of a type that that implements ISpecificRecord.</param>
+        /// <param name="record">A record of a type that implements ISpecificRecord.</param>
         /// <param name="fields">An array of strings containing the data to be appended.</param>
         /// <exception cref="ArgumentNullException"><paramref name="record">record</paramref> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown when some fields have null values that are not allowed by the schema.</exception>
@@ -345,7 +345,7 @@ namespace CsvToAvro
         /// <summary>
         ///     Appends data to the end of the Avro file currently being written to.
         /// </summary>
-        /// <param name="record">A record of a type that that implements ISpecificRecord.</param>
+        /// <param name="record">A record of a type that implements ISpecificRecord.</param>
         /// <param name="line">
         ///     An separated string containing the data to be appended.
         ///     No attempt is made to perform any complex parsing; it simply splits the string based on the supplied separator.
